@@ -48,6 +48,9 @@ the gift.
 Friends support emulates the documented receiver side of BFF BUMP. It does not
 claim support for Exchange, Visit Bump, Mail, or Special modes.
 
+The BFF reward flow has been verified successfully with a physical Tamagotchi
+Friends and Flipper Zero.
+
 ## Run from source
 
 Install Python 3 and the dependency, then run:
