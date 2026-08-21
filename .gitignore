@@ -16,6 +16,11 @@ dist/
 *.spec
 *.exe
 
+# Keep the installable Flipper companion, but not its debug build.
+!flipper/dist/
+flipper/dist/*
+!flipper/dist/tamagometer_enhanced.fap
+
 # Local device settings and logs
 .tamagometer-desktop.json
 *.log

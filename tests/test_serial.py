@@ -1,7 +1,7 @@
 import threading
 import unittest
 
-from flipper_serial import FlipperConnection
+from flipper_serial import FRIENDS_OK_TOKEN, FlipperConnection
 from tamagometer_core import GIFT_RESPONSE_2, make_gift_response
 
 
@@ -26,6 +26,8 @@ class FakeSerial:
         if line == "tamagometer listen":
             self.listen_count += 1
             self.input.extend(f"noise[PICO]{INCOMING}[END]prompt>".encode("ascii"))
+        elif line.startswith("tamagometer friends"):
+            self.input.extend(FRIENDS_OK_TOKEN)
         return len(data)
 
     def read(self, size):
@@ -59,6 +61,16 @@ class SerialFlowTests(unittest.TestCase):
         self.assertEqual(statuses[-1], "Gift sent")
         self.assertTrue(any(line.startswith("RX1 OK") for line in trace))
         self.assertTrue(any(line.startswith("RX3 OK") for line in trace))
+
+    def test_friends_reward_uses_enhanced_companion_command(self):
+        fake = FakeSerial()
+        connection = FlipperConnection(fake)
+        statuses = []
+
+        connection.send_friends_reward(255, threading.Event(), statuses.append)
+
+        self.assertEqual(fake.output, ["tamagometer friends255"])
+        self.assertEqual(statuses[-1], "BFF reward sent")
 
 
 if __name__ == "__main__":

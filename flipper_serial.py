@@ -11,6 +11,8 @@ from collections.abc import Callable
 BAUD_RATE = 460_800
 COMMAND_RE = re.compile(rb"\[PICO\]([01]{160})\[END\]")
 TIMEOUT_TOKEN = b"[PICO]timed out[END]"
+FRIENDS_OK_TOKEN = b"[TAMAFRIENDS]ok[END]"
+FRIENDS_CANCELLED_TOKEN = b"[TAMAFRIENDS]cancelled[END]"
 
 
 def list_ports() -> list[tuple[str, str]]:
@@ -132,3 +134,64 @@ class FlipperConnection:
         self.send_message(response4)
         self.trace("TX4 sent twice; exchange complete")
         status("Gift sent")
+
+    def send_friends_reward(
+        self,
+        outcome: int,
+        cancel: threading.Event,
+        status: Callable[[str], None] = lambda _message: None,
+    ) -> None:
+        """Ask the enhanced Companion to broadcast a Friends BFF response."""
+        if not 0 <= outcome <= 0xFF:
+            raise ValueError("Friends outcome must be between 0 and 255")
+
+        self._buffer.clear()
+        status("Broadcasting the Friends BFF response…")
+        self.trace(f"Sending LF RFID BFF outcome 0x{outcome:02X}")
+        self._write_line(f"tamagometer friends{outcome}")
+        deadline = time.monotonic() + 20.0
+
+        while time.monotonic() < deadline:
+            if cancel.is_set():
+                # The Flipper command checks for Ctrl+C between repetitions.
+                self.serial.write(b"\x03")
+                self.serial.flush()
+                cancel_deadline = time.monotonic() + 2.0
+                while time.monotonic() < cancel_deadline:
+                    waiting = getattr(self.serial, "in_waiting", 0)
+                    chunk = self.serial.read(max(1, waiting))
+                    if chunk:
+                        self._buffer.extend(chunk)
+                        if FRIENDS_CANCELLED_TOKEN in self._buffer:
+                            break
+                self._buffer.clear()
+                raise CancelledError
+            waiting = getattr(self.serial, "in_waiting", 0)
+            chunk = self.serial.read(max(1, waiting))
+            if not chunk:
+                continue
+            self._buffer.extend(chunk)
+            if FRIENDS_OK_TOKEN in self._buffer:
+                self.trace("LF RFID broadcast complete")
+                status("BFF reward sent")
+                self._buffer.clear()
+                return
+            if FRIENDS_CANCELLED_TOKEN in self._buffer:
+                self._buffer.clear()
+                raise CancelledError
+            response = self._buffer.decode("utf-8", errors="replace")
+            if "Invalid argument" in response or "command not found" in response.casefold():
+                self._buffer.clear()
+                raise RuntimeError(
+                    "This Flipper app does not support Tamagotchi Friends. "
+                    "Install and open the enhanced Companion included with Tamagometer Desktop."
+                )
+            if len(self._buffer) > 4096:
+                del self._buffer[:-1024]
+
+        response = self._buffer.decode("utf-8", errors="replace")
+        self._buffer.clear()
+        raise RuntimeError(
+            "The Flipper did not confirm the Friends transmission. "
+            "Make sure the enhanced Companion is open."
+        )
