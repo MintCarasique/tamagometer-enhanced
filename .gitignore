@@ -1,0 +1,27 @@
+# Python caches and environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Test and tooling caches
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# PyInstaller output
+build/
+dist/
+*.spec
+*.exe
+
+# Local device settings and logs
+.tamagometer-desktop.json
+*.log
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
