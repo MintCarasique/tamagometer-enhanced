@@ -34,7 +34,7 @@ class FriendsProtocolTests(unittest.TestCase):
             make_bff_reward_packet(256)
 
     def test_flipper_and_python_share_the_same_packet_constants(self):
-        source_path = Path(__file__).resolve().parents[2] / "flipper" / "tamagometer_companion.c"
+        source_path = Path(__file__).resolve().parents[2] / "flipper" / "tamagometer_protocol.c"
         source = source_path.read_text(encoding="utf-8")
         connect_body = re.search(r"connect_ack\[\]\s*=\s*\{([^}]+)\}", source, re.DOTALL)
         reward_body = re.search(r"uint8_t reward\[\]\s*=\s*\{([^}]+)\}", source, re.DOTALL)

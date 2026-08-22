@@ -41,6 +41,13 @@ inline notifications, repeat-last-transfer, and one-file diagnostic export.
 Friends jewelry names remain numbered until a complete ID-to-name mapping can
 be verified; the application does not label outcomes from an incomplete list.
 
+## Standalone Flipper development
+
+The `feature/standalone-flipper-app` branch develops Tamagometer Enhanced 2.0
+as a hybrid application: gifts can be selected and sent entirely on Flipper,
+while the existing Desktop CLI remains available. Connection items are grouped
+into categories so the 181-item catalog never needs to be browsed as one list.
+
 ## Downloads
 
 Ready-to-use builds are published on the

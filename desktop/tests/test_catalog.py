@@ -1,3 +1,5 @@
+from pathlib import Path
+import re
 import unittest
 
 from tamagometer_desktop.assets import item_sprite_path
@@ -31,6 +33,19 @@ class CatalogPresentationTests(unittest.TestCase):
         )
         self.assertGreaterEqual(available, 170)
         self.assertIsNotNone(item_sprite_path(sprite_filename(CONNECTION_MODE, "Scone")))
+
+    def test_flipper_catalog_and_generated_icons_stay_in_sync(self):
+        flipper = Path(__file__).resolve().parents[2] / "flipper"
+        source = (flipper / "tamagometer_catalog.c").read_text(encoding="utf-8")
+        body = re.search(
+            r"connection_items\[\]\s*=\s*\{(?P<body>.*?)\};",
+            source,
+            re.DOTALL,
+        )
+        self.assertIsNotNone(body)
+        names = tuple(re.findall(r'"([^"]+)"', body.group("body")))
+        self.assertEqual(names, tuple(name for _item_id, name in CONNECTION_MODE.items))
+        self.assertGreaterEqual(len(tuple((flipper / "item_icons").glob("item_*.png"))), 170)
 
 
 if __name__ == "__main__":

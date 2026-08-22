@@ -1,3 +1,5 @@
+from pathlib import Path
+import re
 import unittest
 
 from tamagometer_core import (
@@ -10,6 +12,24 @@ class ProtocolTests(unittest.TestCase):
     def test_templates_are_valid(self):
         self.assertTrue(validate_message(GIFT_RESPONSE_2))
         self.assertTrue(validate_message(GIFT_RESPONSE_4))
+
+    def test_flipper_and_desktop_share_connection_templates(self):
+        source = (
+            Path(__file__).resolve().parents[2]
+            / "flipper"
+            / "tamagometer_protocol.c"
+        ).read_text(encoding="utf-8")
+
+        def c_string(name):
+            match = re.search(
+                rf"{name}\[\]\s*=\s*(?P<body>(?:\s*\"[01]+\")+)\s*;",
+                source,
+            )
+            self.assertIsNotNone(match)
+            return "".join(re.findall(r'\"([01]+)\"', match.group("body")))
+
+        self.assertEqual(c_string("gift_response_2"), GIFT_RESPONSE_2)
+        self.assertEqual(c_string("gift_response_4_template"), GIFT_RESPONSE_4)
 
     def test_every_documented_gift_generates_valid_message(self):
         self.assertEqual(len(GIFT_ITEMS), 181)
