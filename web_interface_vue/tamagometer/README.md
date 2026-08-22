@@ -1,39 +1,27 @@
-# tamagometer
+# Legacy Tamagometer web interface
 
-Automatically generated readme from Vue/Vite (leaving it here for reference)
+This Vue 3 application is the research-oriented web interface inherited from
+the upstream [Tamagometer](https://github.com/zacharesmer/tamagometer) project.
+It is retained in Tamagometer Enhanced for protocol study and historical
+compatibility. The supported end-user interface in this fork is the Windows
+application in [`desktop/`](../../desktop/).
 
-## Recommended IDE Setup
+The upstream project and its author remain credited under the MIT license.
+Operational links in this copy point to Tamagometer Enhanced, while upstream
+links are explicitly labelled as source attribution or legacy documentation.
 
-[VSCode](https://code.visualstudio.com/) + [Volar/ Vue Official](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
+## Development
 
 ```sh
 npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
+Run the type checker and production build with:
 
 ```sh
 npm run build
 ```
 
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+See the root [`CONTRIBUTING.md`](../../CONTRIBUTING.md) for current contribution
+guidelines.

@@ -5,6 +5,11 @@ Tamagotchi devices through a Flipper Zero. It combines the original
 Tamagometer Connection 2024 infrared protocol with a simpler desktop interface
 and Tamagotchi Friends BFF reward support over low-frequency RFID.
 
+This project is maintained as an independent enhanced fork of Zach Resmer's
+MIT-licensed Tamagometer research project. Upstream links are retained in the
+Credits section for attribution; downloads, support, and current development
+for this fork are hosted in this repository.
+
 ## Supported devices
 
 | Device | Transport | Available operation | Status |

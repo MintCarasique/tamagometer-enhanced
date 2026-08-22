@@ -70,9 +70,11 @@ watch(
             <RouterView />
         </main>
         <footer>
-            <p>This site is hosted using GitHub Pages. <a href="https://github.com/zacharesmer/tamagometer">View the
-                    source
-                    code</a></p>
+            <p>This legacy web interface is preserved from the MIT-licensed
+                <a href="https://github.com/zacharesmer/tamagometer">upstream Tamagometer project</a>.
+                Current enhanced development and downloads are in the
+                <a href="https://github.com/MintCarasique/tamagometer-enhanced">Tamagometer Enhanced repository</a>.
+            </p>
             <p>Tamagotchi sprites are from the <a href="https://tamagotchi.fandom.com/">Tamagotchi Wiki</a> and MasterPengo. Icons are
                 from <a href="https://glyphs.fyi/">Glyphs.fyi</a></p>
         </footer>
