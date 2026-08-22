@@ -1,0 +1,145 @@
+name: Test, build, and release
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+jobs:
+  desktop-tests:
+    name: Desktop tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: desktop/requirements-dev.txt
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Compile Python sources
+        run: python -m compileall -q .
+
+  desktop-exe:
+    name: Build Windows application
+    needs: desktop-tests
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: desktop/requirements-dev.txt
+
+      - name: Install build dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Build standalone executable
+        run: >-
+          pyinstaller --noconfirm --clean --onefile --windowed
+          --name TamagometerDesktop --distpath ../release app.py
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: TamagometerDesktop-windows
+          path: release/TamagometerDesktop.exe
+          if-no-files-found: error
+          retention-days: 14
+
+  flipper-fap:
+    name: Build Flipper application
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository and Flipper submodule
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Build FAP with the official release SDK
+        uses: flipperdevices/flipperzero-ufbt-action@v0.1
+        with:
+          app-dir: flipper
+          sdk-channel: release
+
+      - name: Prepare named FAP
+        shell: bash
+        run: |
+          mkdir -p release
+          source_fap="$(find flipper/dist -maxdepth 1 -type f -name '*.fap' -print -quit)"
+          test -n "$source_fap"
+          cp "$source_fap" release/TamagometerEnhanced.fap
+
+      - name: Upload Flipper artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: TamagometerEnhanced-flipper
+          path: release/TamagometerEnhanced.fap
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    name: Publish GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs:
+      - desktop-exe
+      - flipper-fap
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: TamagometerDesktop-windows
+          path: release
+
+      - name: Download Flipper artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: TamagometerEnhanced-flipper
+          path: release
+
+      - name: Generate checksums
+        working-directory: release
+        run: sha256sum TamagometerDesktop.exe TamagometerEnhanced.fap > SHA256SUMS.txt
+
+      - name: Create release and upload binaries
+        uses: softprops/action-gh-release@v3
+        with:
+          files: |
+            release/TamagometerDesktop.exe
+            release/TamagometerEnhanced.fap
+            release/SHA256SUMS.txt
+          fail_on_unmatched_files: true
+          generate_release_notes: true

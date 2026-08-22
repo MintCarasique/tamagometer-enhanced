@@ -17,22 +17,23 @@ Exchange, Visit Bump, Mail, and Special modes are not implemented.
 
 ## Downloads
 
-Ready-to-use builds are stored in [`artifacts/`](artifacts/):
+Ready-to-use builds are published on the
+[GitHub Releases page](https://github.com/MintCarasique/tamagometer-enhanced/releases):
 
-- [`TamagometerDesktop.exe`](artifacts/TamagometerDesktop.exe) — Windows desktop application.
-- [`TamagometerEnhanced.fap`](artifacts/TamagometerEnhanced.fap) — enhanced Flipper Zero companion.
+- [Download `TamagometerDesktop.exe`](https://github.com/MintCarasique/tamagometer-enhanced/releases/latest/download/TamagometerDesktop.exe)
+- [Download `TamagometerEnhanced.fap`](https://github.com/MintCarasique/tamagometer-enhanced/releases/latest/download/TamagometerEnhanced.fap)
 
-The included FAP targets official Flipper firmware 1.4.3 / API 87.1. If a
-future firmware version reports that the app is incompatible, rebuild the
-companion with the current uFBT SDK.
+Each release also includes `SHA256SUMS.txt`. The FAP is built with the latest
+official Flipper release SDK available when the release is created.
 
 ## Installation
 
 1. Connect the Flipper Zero and open qFlipper.
-2. Copy `artifacts/TamagometerEnhanced.fap` to `SD Card/apps/Tools`.
+2. Download `TamagometerEnhanced.fap` from the latest GitHub Release and copy
+   it to `SD Card/apps/Tools`.
 3. Close qFlipper so it releases the USB serial port.
 4. On the Flipper, open **Apps → Tools → Tamagometer Enhanced** and leave it open.
-5. Start `artifacts/TamagometerDesktop.exe`.
+5. Download and start `TamagometerDesktop.exe` from the same release.
 6. Select the Flipper COM port and click **Connect**.
 
 The enhanced companion replaces the original Catalog Companion for this
@@ -85,7 +86,7 @@ The desktop source is in [`desktop/`](desktop/). It requires Python and
 
 ```powershell
 cd desktop
-python -m pip install -r requirements.txt
+python -m pip install -r requirements-dev.txt
 python app.py
 ```
 
@@ -113,10 +114,23 @@ ufbt
 
 The generated application is written to `flipper/dist/tamagometer_companion.fap`.
 
+### Continuous integration and releases
+
+GitHub Actions runs the desktop tests and builds both binaries for pushes and
+pull requests. Successful builds are available as temporary workflow artifacts.
+
+Tags matching `v*` additionally create a GitHub Release containing the Windows
+executable, Flipper application, generated release notes, and checksums:
+
+```powershell
+git tag v1.0.0
+git push origin v1.0.0
+```
+
 ## Repository layout
 
 ```text
-artifacts/              Ready-to-install Windows and Flipper builds
+artifacts/              Information about downloading generated builds
 desktop/                Modern Windows desktop application and tests
 flipper/                Enhanced Companion Git submodule
 pico/                   Original Raspberry Pi Pico bridge

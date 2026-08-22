@@ -16,3 +16,7 @@ node_modules
 *.odt
 *.odp
 extra/title_tamafont*
+
+# Release binaries are produced by GitHub Actions and attached to Releases.
+artifacts/*.exe
+artifacts/*.fap

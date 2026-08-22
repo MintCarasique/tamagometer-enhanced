@@ -12,8 +12,9 @@ The app is unofficial and is not affiliated with Bandai.
 ## Install the enhanced Flipper companion
 
 Friends does not use infrared, so the original Tamagometer Companion from the
-Flipper Catalog is not sufficient. Install the bundled
-[`TamagometerEnhanced.fap`](../artifacts/TamagometerEnhanced.fap):
+Flipper Catalog is not sufficient. Download
+[`TamagometerEnhanced.fap`](https://github.com/MintCarasique/tamagometer-enhanced/releases/latest/download/TamagometerEnhanced.fap)
+from the latest GitHub Release:
 
 1. Connect the Flipper and open qFlipper.
 2. Copy the `.fap` to `SD Card/apps/Tools`.
@@ -22,9 +23,8 @@ Flipper Catalog is not sufficient. Install the bundled
 5. Connect the Flipper by USB in Tamagometer Desktop.
 
 The enhanced companion retains Connection IR support, so it replaces the
-Catalog version for both modes. It was built for official Flipper firmware
-1.4.3 / API 87.1; rebuild it after a future firmware update if Flipper reports
-that the app is incompatible.
+Catalog version for both modes. Release FAPs are built with the latest official
+Flipper release SDK available at build time.
 
 ## Connection 2024 gifts
 
