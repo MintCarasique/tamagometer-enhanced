@@ -1,116 +1,140 @@
 # Tamagometer Enhanced
 
-This fork adds a modern Windows desktop application and support for
-**Tamagotchi Friends BFF BUMP** through the Flipper Zero's LF RFID hardware,
-while retaining the original Tamagotchi Connection 2024 infrared features.
+Tamagometer Enhanced is an unofficial Windows utility for interacting with
+Tamagotchi devices through a Flipper Zero. It combines the original
+Tamagometer Connection 2024 infrared protocol with a simpler desktop interface
+and Tamagotchi Friends BFF reward support over low-frequency RFID.
 
-- Desktop source and tests: [`desktop/`](desktop/)
-- Enhanced Flipper companion source: [`flipper/`](flipper/)
-- Ready-to-install Windows and Flipper builds: [`artifacts/`](artifacts/)
+## Supported devices
 
-Friends support has been verified successfully with a physical Tamagotchi
-Friends and Flipper Zero. See the [desktop instructions](desktop/README.md) for
-installation and usage.
+| Device | Transport | Available operation | Status |
+| --- | --- | --- | --- |
+| Tamagotchi Connection v3 2024 re-release | Infrared | Send any of 181 gifts | Verified on hardware |
+| Tamagotchi Friends | LF RFID | BFF BUMP: 60 jewelry outcomes and 200–1,000 Gotchi Points | Verified on hardware |
 
-## Original web application
+Tamagotchi Friends support currently covers the receiver side of **BFF BUMP**.
+Exchange, Visit Bump, Mail, and Special modes are not implemented.
 
-Check out the original web app here: https://zacharesmer.github.io/tamagometer/
+## Downloads
 
-# Hardware
-## Flipper Zero
-The simplest way to get started is with a Flipper Zero. (Not the cheapest,though--for that see the DIY instructions)
+Ready-to-use builds are stored in [`artifacts/`](artifacts/):
 
-1. Install the "Tamagometer" app from the Flipper App Catalog (on the Flipper Mobile App or qFlipper).
-2. Launch the Tamagometer app on the Flipper.
-3. Connect the Flipper Zero to your computer via a USB-C cable.
-4. Open [the web app](https://zacharesmer.github.io/tamagometer/) on your computer.
-5. Follow the "Demo" instructions on [the web app](https://zacharesmer.github.io/tamagometer/) to connect to your Flipper device!
+- [`TamagometerDesktop.exe`](artifacts/TamagometerDesktop.exe) — Windows desktop application.
+- [`TamagometerEnhanced.fap`](artifacts/TamagometerEnhanced.fap) — enhanced Flipper Zero companion.
 
-Note: the screen on the Flipper Zero itself will not change upon being connected to the computer/web app, but if the app is open, it is waiting for commands in the background.
+The included FAP targets official Flipper firmware 1.4.3 / API 87.1. If a
+future firmware version reports that the app is incompatible, rebuild the
+companion with the current uFBT SDK.
 
-If the Tamagometer web app is not registering the Flipper Zero that is connected, make sure your USB-C cable supports data transfer (some only support charging). As a basic connection test, if you can use your flipper with https://lab.flipper.net/ or qFlipper, then the USB cable is working correctly. (Note: the flipper can only be connected to one program at a time, so close lab.flipper.net and qflipper before using the tamagometer).
+## Installation
 
-The [Flipper app source code](https://github.com/zacharesmer/tamagometer-companion-flipper) is also available if you'd like to modify it or build it yourself. It is also in the `flipper` folder of this repo as a submodule, so if you want to clone it all at once use `git clone --recursive https://github.com/zacharesmer/tamagometer.git`
+1. Connect the Flipper Zero and open qFlipper.
+2. Copy `artifacts/TamagometerEnhanced.fap` to `SD Card/apps/Tools`.
+3. Close qFlipper so it releases the USB serial port.
+4. On the Flipper, open **Apps → Tools → Tamagometer Enhanced** and leave it open.
+5. Start `artifacts/TamagometerDesktop.exe`.
+6. Select the Flipper COM port and click **Connect**.
 
-## DIY/Bring Your Own Board
-If you don't have a Flipper, you can make your own transmitter/receiver from a Raspberry Pi Pico. The firmware is written in MicroPython, so you'll need to prepare the Pico to run micropython programs. It might work on other boards that can run micropython, but I haven't tested any. 
+The enhanced companion replaces the original Catalog Companion for this
+desktop application. It retains Connection infrared support and adds the
+`friends` LF RFID command. Do not keep both Companion versions open at once,
+because both register the same `tamagometer` USB CLI command.
 
-1. Load the MicroPython firmware onto your pico so that it will be able to run this program. Instructions and a link to the file are on the raspberry pi website here: https://www.raspberrypi.com/documentation/microcontrollers/micropython.html
-2. Copy all files in the `pico` folder onto the pico. 
-3. Unplug the pico and plug it back in, and main.py will run automatically.
+## Sending a Connection 2024 gift
 
-(To prepare the board and load the files you can also use an IDE like Thonny or VSCode with the MicroPico extension. Please note that if one of those is connected to the board, the web UI will break in some weird ways. I will try and make it break in some less weird ways, but it will never work if you're also connected to the board with Thonny or MicroPico or minicom or something)
+1. Select **Connection 2024 · IR**.
+2. Choose a gift and click **Wait and send gift**.
+3. On the Tamagotchi, choose **Connection → Present** and start the connection.
+4. Align the infrared ports until the desktop confirms completion.
 
-### Parts
-- Raspberry Pi Pico
-- A 38kHz IR receiver 
-- A 38kHz IR transmitter
-- Wires/header pins/usb cable for power
+The physical Tamagotchi initiates this exchange because the initiator receives
+the gift.
 
-I haven't tested with an ESP32 or any other boards but it should probably work as long as it can run micropython? Definitely let me know if you try it with one and it works!
+## Sending a Tamagotchi Friends BFF reward
 
-[This looks like the receiver I used](https://www.ebay.com/itm/172087478029), and [this looks like the transmitter](https://www.ebay.com/itm/294328064400). I didn't actually order either of those from those sellers, so I'm not recommending those in particular. There are also bundles on Amazon and AliExpress with receivers and transmitters, and Adafruit even sells a transceiver where both are built into one chip. The important things to check for:
+1. Select **Friends · LF RFID**.
+2. Choose jewelry or a Gotchi Point outcome.
+3. On Tamagotchi Friends, open **BFF BUMP** and start a bump.
+4. Hold the back of the Tamagotchi directly against the Flipper's LF RFID
+   antenna.
+5. Click **Send BFF reward** and keep the devices together until completion,
+   which takes about 12 seconds.
 
-- They must deal with the 38kHz modulation in hardware. A plain IR LED or an analog sensor will not work with the firmware as it is written. It would not be very hard to make it work with a regular LED, I just didn't yet. Contributions are welcome if you make that work and want to share!
-- If you get something that only works on 5V, you'll need a level shifter since the pico GPIO puts out 3.3V
+## Clone the repository
 
-### Pins
-- Transmitter power: GPIO 2
-- Transmitter data: GPIO 3
-- Receiver power: GPIO 6
-- Receiver data: GPIO 7
+The Flipper companion is a Git submodule. Clone both repositories with:
 
-To use different pins, change the pin numbers at the top of `rx.py` and `tx.py` to match your setup.
-
-### Troubleshooting
-#### Serial reset (not implemented yet)
-I plan to add a button in the settings to fully reset/forget the previous serial connections to the page. If you need to do that before the button is added, run 
-```javascript
-(await navigator.serial.getPorts()).forEach(port => port.forget())
+```powershell
+git clone --recurse-submodules https://github.com/MintCarasique/tamagometer-enhanced.git
+cd tamagometer-enhanced
 ```
-in the devtools console.
 
-The device that the page connects to is the first one in the list: `(await navigator.serial.getPorts())[0]`. This could be annoying if you have multiple boards connected for some reason, so I plan to add a setting to adjust that as well.
+If the main repository was cloned without the submodule, initialize it with:
 
-#### Linux
-On Linux if you're getting errors about permissions, you may have to add yourself to the dialout group:
+```powershell
+git submodule sync --recursive
+git submodule update --init --recursive
+```
 
-`sudo usermod -aG dialout` 
+## Development
 
-(Or equivalently, `sudo usermod --append --groups dialout`. Do not leave out the `a` or `--append` or you'll be removed from any groups other than dialout)
+### Desktop application
 
-# Web interface
-The web interface allows you to edit infrared codes and send them to a tamagotchi. It will be updated as I learn more about what the different bits in the transmission represent.  
+The desktop source is in [`desktop/`](desktop/). It requires Python and
+`pyserial`:
 
-It uses the WebSerial API, which only works in Chromium browsers for now.
+```powershell
+cd desktop
+python -m pip install -r requirements.txt
+python app.py
+```
 
-## Conversation
-This is the area to edit a conversation, then send it and/or save it. Everything is stored locally on your computer.
+Run its protocol tests with:
 
-### Editing individual bits
-Click on any bit to flip it. This will update the checksum and, if it's known, the displayed value.
+```powershell
+python -m unittest discover -s tests -v
+```
 
-### Editing larger structures
-For any known parts of the transmission, select from a list of possible values. You can toggle whether to see the bits for the known parts in the settings.
+Create a standalone Windows build with PyInstaller:
 
-## Record
-This allows you to snoop/listen in on a conversation between two tamagotchis. You can add the recorded messages to a conversation and save it for later.
+```powershell
+pyinstaller --noconfirm --clean --onefile --windowed --name TamagometerDesktop app.py
+```
 
-## View Saved
-Recorded messages are saved locally on your computer using IndexedDB. **If you clear your cookies and cache or site storage you will lose your saved messages!** Please back them up by  using the export button to save them as a file so that you can add them back if this happens. Importing a file will add onto any existing saved messages; it won't overwrite them.
+### Flipper companion
 
-# Extra info
+The companion source is in the [`flipper/`](flipper/) submodule. Install
+[uFBT](https://github.com/flipperdevices/flipperzero-ufbt), then run:
 
-I wrote a bit about the process of making this in a blog post: https://resmer.co.za/ch/posts/tamagometer/
+```powershell
+cd flipper
+ufbt
+```
 
-And there are [some slides from a talk at DCFurs 2025](extra/DCFurs-Slides.pdf)
+The generated application is written to `flipper/dist/tamagometer_companion.fap`.
 
-# Prior Art and References
-- [This Tamagotchi reverse engineering project by Natalie Silvanovich](https://github.com/natashenka/Tamagotchi-Hack/tree/master) helped a ton 
-- The corresponding CCC talks: 
-    - [Many Tamagotchis Were Harmed In the Making of This Presentation](https://media.ccc.de/v/29c3-5088-en-many_tamagotchis_were_harmed_in_the_making_of_this_presentation_h264#t=0) 
-    - [Even More Tamagotchis Were Harmed In the Making of This Presentation](https://media.ccc.de/v/30C3_-_5279_-_en_-_saal_1_-_201312291715_-_even_more_tamagotchis_were_harmed_in_the_making_of_this_presentation_-_natalie_silvanovich)
-- Tamagotchi fandom wiki https://tamagotchi.fandom.com/wiki/Main_Page
+## Repository layout
 
-# Disclaimer
-This project is entirely unofficial and not affiliated with Tamagotchi or Bandai. 
+```text
+artifacts/              Ready-to-install Windows and Flipper builds
+desktop/                Modern Windows desktop application and tests
+flipper/                Enhanced Companion Git submodule
+pico/                   Original Raspberry Pi Pico bridge
+web_interface_vue/      Original browser interface
+Protocol.md             Connection protocol documentation
+```
+
+The original web application remains available at
+[zacharesmer.github.io/tamagometer](https://zacharesmer.github.io/tamagometer/).
+
+## Credits
+
+- Connection support is derived from Zach Resmer's MIT-licensed
+  [Tamagometer](https://github.com/zacharesmer/tamagometer) and
+  [Flipper companion](https://github.com/zacharesmer/tamagometer-companion-flipper).
+- Tamagotchi Friends packet data and LF RFID timings are based on Natalie
+  Silvanovich's [Tamagotchi-Hack](https://github.com/natashenka/Tamagotchi-Hack)
+  research and MrBlinky's published packet captures.
+
+This project is unofficial and is not affiliated with Bandai or the
+Tamagotchi brand. See [`LICENSE.md`](LICENSE.md) for licensing information.
