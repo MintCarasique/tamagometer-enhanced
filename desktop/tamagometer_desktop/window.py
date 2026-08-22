@@ -441,9 +441,7 @@ class TamagometerDesktop(tk.Tk):
                     self.transfer_progress.configure(value=maximum)
                 if event.kind in {"done", "cancelled", "error", "disconnected"}:
                     self._set_busy(False)
-                if event.kind == "done":
-                    messagebox.showinfo("Transfer complete", event.text)
-                elif event.kind == "error":
+                if event.kind == "error":
                     messagebox.showerror("Transfer error", event.text)
         except queue.Empty:
             pass
