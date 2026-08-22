@@ -15,6 +15,12 @@ DEFAULT_MODE = "connection"
 class AppSettings:
     port: str = ""
     mode: str = DEFAULT_MODE
+    theme: str = "light"
+    auto_connect: bool = True
+    onboarding_complete: bool = False
+    favorites: tuple[str, ...] = ()
+    recent: tuple[str, ...] = ()
+    last_transfer: str = ""
 
 
 def default_config_path() -> Path:
@@ -39,9 +45,21 @@ class SettingsStore:
             return AppSettings()
         port = data.get("port", "")
         mode = data.get("mode", DEFAULT_MODE)
+        theme = data.get("theme", "light")
+        favorites = data.get("favorites", [])
+        recent = data.get("recent", [])
         return AppSettings(
             port=port if isinstance(port, str) else "",
             mode=mode if isinstance(mode, str) else DEFAULT_MODE,
+            theme=theme if theme in {"light", "dark"} else "light",
+            auto_connect=data.get("auto_connect", True) is not False,
+            onboarding_complete=data.get("onboarding_complete", False) is True,
+            favorites=tuple(value for value in favorites if isinstance(value, str))
+            if isinstance(favorites, list) else (),
+            recent=tuple(value for value in recent if isinstance(value, str))[:12]
+            if isinstance(recent, list) else (),
+            last_transfer=data.get("last_transfer", "")
+            if isinstance(data.get("last_transfer", ""), str) else "",
         )
 
     def save(self, settings: AppSettings) -> None:

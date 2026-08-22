@@ -31,6 +31,16 @@ is rejected immediately with an update instruction.
 Desktop 1.1 requires Tamagometer Enhanced Companion 1.1.0 or newer. Install
 the `.exe` and `.fap` from the same release.
 
+## Desktop 1.2 UI improvements
+
+The current development version adds guided first-run setup, automatic Flipper
+connection, animated IR/LF placement instructions, real progress, favorites,
+recent history, gift categories, Connection item sprites, light/dark themes,
+inline notifications, repeat-last-transfer, and one-file diagnostic export.
+
+Friends jewelry names remain numbered until a complete ID-to-name mapping can
+be verified; the application does not label outcomes from an incomplete list.
+
 ## Downloads
 
 Ready-to-use builds are published on the

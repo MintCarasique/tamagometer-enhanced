@@ -9,6 +9,24 @@ Flipper Zero. The interface supports two distinct protocols:
 
 The app is unofficial and is not affiliated with Bandai.
 
+## Desktop 1.2 UI
+
+The current development version adds first-run setup and automatic connection,
+an animated IR/LF placement guide, light and dark themes, inline notifications,
+real transfer progress, categories, favorites, recently sent items, **Repeat
+last transfer**, and single-file diagnostic export.
+
+Connection item previews reuse the sprites already present in the upstream
+Tamagometer web interface. The upstream set provides a usable image for 171 of
+181 catalog entries; the remaining items show a text fallback.
+
+Friends jewelry remains numbered `#01–60`.
+[Published protocol research](https://natashenka.ca/emulating-the-tamagotchi-friends-nfc/)
+confirms that outcome bytes 0–59 follow the collection-screen order, but the
+available [public jewelry table](https://tamagotchi.fandom.com/wiki/Jewelry)
+does not contain a complete, verified set of all 60 names and images. The
+desktop therefore avoids presenting a guessed mapping.
+
 ## Install the enhanced Flipper companion
 
 Friends does not use infrared, so the original Tamagometer Companion from the
@@ -84,6 +102,10 @@ is split by responsibility:
 - `tamagometer_desktop/modes.py` — supported modes and item catalogs;
 - `tamagometer_desktop/settings.py` — configuration persistence;
 - `tamagometer_desktop/transfer.py` — background transfer orchestration.
+- `tamagometer_desktop/catalog.py` — categories, favorites keys, and sprite mapping;
+- `tamagometer_desktop/alignment.py` — animated IR/LF placement guide;
+- `tamagometer_desktop/onboarding.py` — first-run setup;
+- `tamagometer_desktop/diagnostics.py` — privacy-conscious report export.
 
 Protocol encoding and serial transport remain isolated in `tamagometer_core.py`,
 `friends_core.py`, `flipper_serial.py`, and the shared structured states in

@@ -11,7 +11,15 @@ class SettingsStoreTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "settings.json"
             store = SettingsStore(path)
-            expected = AppSettings(port="COM6", mode="friends")
+            expected = AppSettings(
+                port="COM6",
+                mode="friends",
+                theme="dark",
+                onboarding_complete=True,
+                favorites=("connection:4",),
+                recent=("friends:255", "connection:4"),
+                last_transfer="friends:255",
+            )
 
             store.save(expected)
 
@@ -25,6 +33,19 @@ class SettingsStoreTests(unittest.TestCase):
             self.assertEqual(store.load(), AppSettings())
             path.write_text("[]", encoding="utf-8")
             self.assertEqual(store.load(), AppSettings())
+
+    def test_invalid_extended_fields_are_safely_normalized(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            path.write_text(
+                '{"theme":"neon","favorites":"bad","recent":[1,"connection:4"],"auto_connect":false}',
+                encoding="utf-8",
+            )
+            settings = SettingsStore(path).load()
+            self.assertEqual(settings.theme, "light")
+            self.assertEqual(settings.favorites, ())
+            self.assertEqual(settings.recent, ("connection:4",))
+            self.assertFalse(settings.auto_connect)
 
 
 if __name__ == "__main__":

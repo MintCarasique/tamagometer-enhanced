@@ -69,7 +69,8 @@ jobs:
       - name: Build standalone executable
         run: >-
           pyinstaller --noconfirm --clean --onefile --windowed
-          --name TamagometerDesktop --distpath ../release app.py
+          --name TamagometerDesktop --distpath ../release
+          --add-data "assets;assets" app.py
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v7
