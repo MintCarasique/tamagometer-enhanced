@@ -119,6 +119,15 @@ def configure_theme(root: tk.Tk) -> None:
         padding=8,
     )
     style.configure(
+        "Horizontal.TProgressbar",
+        background=ACCENT,
+        troughcolor=ACCENT_SOFT,
+        bordercolor=ACCENT_SOFT,
+        lightcolor=ACCENT,
+        darkcolor=ACCENT,
+        thickness=8,
+    )
+    style.configure(
         "Gift.Treeview",
         background=CARD,
         fieldbackground=CARD,

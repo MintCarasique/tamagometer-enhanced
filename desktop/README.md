@@ -26,6 +26,11 @@ The enhanced companion retains Connection IR support, so it replaces the
 Catalog version for both modes. Release FAPs are built with the latest official
 Flipper release SDK available at build time.
 
+Desktop 1.1 performs a capability handshake during connection and therefore
+requires Tamagometer Enhanced Companion 1.1.0 or newer. It automatically picks
+a likely Flipper COM port and reconnects when a previously connected Flipper
+returns after a USB interruption.
+
 ## Connection 2024 gifts
 
 1. Select **Connection 2024 · IR** and connect the COM port.
@@ -42,8 +47,8 @@ the gift.
 2. Choose jewelry or a Gotchi Point outcome.
 3. On Tamagotchi Friends, open **BFF BUMP** and start a bump.
 4. Hold the back of the Tamagotchi directly against the Flipper's LF RFID
-   antenna, then click **Send BFF reward**. Keep the devices together until the
-   desktop confirms completion (about 12 seconds).
+   antenna, then click **Send BFF reward**. Keep the devices together while the
+   progress indicator advances through all 10 repetitions (about 12 seconds).
 
 Friends support emulates the documented receiver side of BFF BUMP. It does not
 claim support for Exchange, Visit Bump, Mail, or Special modes.
@@ -81,7 +86,8 @@ is split by responsibility:
 - `tamagometer_desktop/transfer.py` — background transfer orchestration.
 
 Protocol encoding and serial transport remain isolated in `tamagometer_core.py`,
-`friends_core.py`, and `flipper_serial.py`.
+`friends_core.py`, `flipper_serial.py`, and the shared structured states in
+`transfer_status.py`.
 
 ## Protocol sources
 

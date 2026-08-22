@@ -1,31 +1,107 @@
-"""Serial bridge for the Tamagometer Companion app on Flipper Zero."""
+"""Serial bridge for Tamagometer Enhanced Companion on Flipper Zero."""
 
 from __future__ import annotations
 
+from collections.abc import Callable, Iterable
+from dataclasses import dataclass
 import re
 import threading
 import time
-from collections.abc import Callable
+
+from transfer_status import TransferState, TransferUpdate
 
 
 BAUD_RATE = 460_800
+MIN_COMPANION_VERSION = (1, 1, 0)
+REQUIRED_CAPABILITIES = frozenset({"connection_ir", "friends_lf", "friends_progress"})
 COMMAND_RE = re.compile(rb"\[PICO\]([01]{160})\[END\]")
+INFO_RE = re.compile(
+    rb"\[TAMAGOMETER\]version=([^;\]]+);protocol=(\d+);capabilities=([a-z0-9_,.-]+)\[END\]",
+)
+FRIENDS_PROGRESS_RE = re.compile(rb"\[TAMAFRIENDS\]progress=(\d+)/(\d+)\[END\]")
 TIMEOUT_TOKEN = b"[PICO]timed out[END]"
 FRIENDS_OK_TOKEN = b"[TAMAFRIENDS]ok[END]"
 FRIENDS_CANCELLED_TOKEN = b"[TAMAFRIENDS]cancelled[END]"
 
 
-def list_ports() -> list[tuple[str, str]]:
-    try:
-        from serial.tools import list_ports as serial_list_ports
-    except ImportError:
-        return []
-    return [(port.device, port.description or port.device)
-            for port in serial_list_ports.comports()]
+@dataclass(frozen=True)
+class SerialPortInfo:
+    device: str
+    description: str
+    vid: int | None = None
+    pid: int | None = None
+    manufacturer: str = ""
+    hwid: str = ""
+
+    @property
+    def display_name(self) -> str:
+        return f"{self.device} — {self.description or self.device}"
+
+
+@dataclass(frozen=True)
+class CompanionInfo:
+    version: str
+    protocol: int
+    capabilities: frozenset[str]
 
 
 class CancelledError(Exception):
     pass
+
+
+class SerialDisconnectedError(RuntimeError):
+    pass
+
+
+class IncompatibleCompanionError(RuntimeError):
+    pass
+
+
+def list_ports() -> list[SerialPortInfo]:
+    try:
+        from serial.tools import list_ports as serial_list_ports
+    except ImportError:
+        return []
+    return [
+        SerialPortInfo(
+            device=port.device,
+            description=port.description or port.device,
+            vid=port.vid,
+            pid=port.pid,
+            manufacturer=port.manufacturer or "",
+            hwid=port.hwid or "",
+        )
+        for port in serial_list_ports.comports()
+    ]
+
+
+def find_flipper_port(
+    ports: Iterable[SerialPortInfo], preferred: str = "",
+) -> SerialPortInfo | None:
+    """Select a remembered or likely Flipper USB serial port."""
+    candidates = list(ports)
+    for port in candidates:
+        if preferred and port.device.casefold() == preferred.casefold():
+            return port
+
+    def score(port: SerialPortInfo) -> int:
+        identity = " ".join((port.description, port.manufacturer, port.hwid)).casefold()
+        value = 100 if "flipper" in identity else 0
+        if port.vid == 0x0483 and port.pid == 0x5740:
+            value += 40
+        return value
+
+    ranked = sorted(candidates, key=score, reverse=True)
+    if ranked and score(ranked[0]) > 0:
+        return ranked[0]
+    return candidates[0] if len(candidates) == 1 else None
+
+
+def _version_tuple(version: str) -> tuple[int, int, int]:
+    match = re.match(r"^(\d+)\.(\d+)(?:\.(\d+))?", version)
+    if not match:
+        return (0, 0, 0)
+    return tuple(int(part or 0) for part in match.groups())  # type: ignore[return-value]
 
 
 class FlipperConnection:
@@ -33,36 +109,122 @@ class FlipperConnection:
         self.serial = serial_port
         self._buffer = bytearray()
         self.trace = trace or (lambda _message: None)
+        self.port = getattr(serial_port, "port", "") if serial_port else ""
+        self.companion: CompanionInfo | None = None
 
     @property
     def connected(self) -> bool:
-        return bool(self.serial and getattr(self.serial, "is_open", True))
+        try:
+            return bool(self.serial and getattr(self.serial, "is_open", True))
+        except Exception:
+            return False
 
-    def open(self, port: str) -> None:
+    def open(self, port: str, verify: bool = True) -> CompanionInfo | None:
         if self.connected:
             self.close()
         try:
             import serial
         except ImportError as error:
             raise RuntimeError("The pyserial module is not installed") from error
-        self.serial = serial.Serial(
-            port=port, baudrate=BAUD_RATE, timeout=0.08, write_timeout=2,
-        )
-        self._buffer.clear()
+        try:
+            self.serial = serial.Serial(
+                port=port, baudrate=BAUD_RATE, timeout=0.08, write_timeout=2,
+            )
+            self.port = port
+            self._buffer.clear()
+            if verify:
+                self.companion = self.get_info()
+            return self.companion
+        except Exception:
+            self.close()
+            raise
 
     def close(self) -> None:
-        if self.serial:
+        serial_port, self.serial = self.serial, None
+        if serial_port:
             try:
-                self.serial.close()
-            finally:
-                self.serial = None
-                self._buffer.clear()
+                serial_port.close()
+            except Exception:
+                pass
+        self._buffer.clear()
+        self.companion = None
+
+    def _disconnect(self, error: Exception) -> SerialDisconnectedError:
+        port = self.port
+        self.close()
+        return SerialDisconnectedError(f"Flipper disconnected from {port or 'the COM port'}")
+
+    def _write(self, data: bytes) -> None:
+        if not self.connected:
+            raise SerialDisconnectedError("Flipper is not connected")
+        try:
+            self.serial.write(data)
+            self.serial.flush()
+        except Exception as error:
+            raise self._disconnect(error) from error
 
     def _write_line(self, text: str) -> None:
+        self._write((text + "\r\n").encode("ascii"))
+
+    def _read_chunk(self) -> bytes:
         if not self.connected:
-            raise RuntimeError("Flipper is not connected")
-        self.serial.write((text + "\r\n").encode("ascii"))
-        self.serial.flush()
+            raise SerialDisconnectedError("Flipper is not connected")
+        try:
+            waiting = getattr(self.serial, "in_waiting", 0)
+            return self.serial.read(max(1, waiting))
+        except Exception as error:
+            raise self._disconnect(error) from error
+
+    def _clear_input(self) -> None:
+        self._buffer.clear()
+        reset = getattr(self.serial, "reset_input_buffer", None)
+        if reset:
+            try:
+                reset()
+            except Exception as error:
+                raise self._disconnect(error) from error
+
+    def get_info(self, timeout: float = 1.8) -> CompanionInfo:
+        """Perform the versioned Companion capability handshake."""
+        self._clear_input()
+        self._write_line("tamagometer info")
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            chunk = self._read_chunk()
+            if chunk:
+                self._buffer.extend(chunk)
+                match = INFO_RE.search(self._buffer)
+                if match:
+                    info = CompanionInfo(
+                        version=match.group(1).decode("ascii"),
+                        protocol=int(match.group(2)),
+                        capabilities=frozenset(match.group(3).decode("ascii").split(",")),
+                    )
+                    self._buffer.clear()
+                    missing = REQUIRED_CAPABILITIES - info.capabilities
+                    if info.protocol != 1 or _version_tuple(info.version) < MIN_COMPANION_VERSION or missing:
+                        if missing:
+                            details = f"missing: {', '.join(sorted(missing))}"
+                        elif info.protocol != 1:
+                            details = f"unsupported protocol {info.protocol}"
+                        else:
+                            details = "version 1.1.0 or newer is required"
+                        raise IncompatibleCompanionError(
+                            f"Companion {info.version} is incompatible ({details}). "
+                            "Install and open Tamagometer Enhanced Companion 1.1.0 or newer."
+                        )
+                    self.companion = info
+                    return info
+                text = self._buffer.decode("utf-8", errors="replace").casefold()
+                if "invalid argument" in text or "command not found" in text:
+                    break
+                if len(self._buffer) > 4096:
+                    del self._buffer[:-1024]
+        self._buffer.clear()
+        raise IncompatibleCompanionError(
+            "The open Flipper app does not support the 1.1 capability handshake. "
+            "Install and open Tamagometer Enhanced Companion 1.1.0 or newer."
+        )
 
     def send_message(self, bits: str) -> None:
         self._write_line("tamagometer send" + bits)
@@ -72,8 +234,7 @@ class FlipperConnection:
         while time.monotonic() < deadline:
             if cancel.is_set():
                 raise CancelledError
-            waiting = getattr(self.serial, "in_waiting", 0)
-            chunk = self.serial.read(max(1, waiting))
+            chunk = self._read_chunk()
             if chunk:
                 self._buffer.extend(chunk)
                 match = COMMAND_RE.search(self._buffer)
@@ -109,71 +270,71 @@ class FlipperConnection:
         response2: str,
         response4: str | Callable[[str], str],
         cancel: threading.Event,
-        status: Callable[[str], None] = lambda _message: None,
+        status: Callable[[TransferUpdate], None] = lambda _update: None,
     ) -> None:
-        """Act as the waiting Tamagotchi in the four-message exchange."""
-        status("Waiting for the first message from Tamagotchi…")
+        status(TransferUpdate(TransferState.WAITING_FIRST_MESSAGE, "Waiting for the first message from Tamagotchi…"))
         first = self.wait_for_message(cancel)
         if first is None:
             raise RuntimeError("The first message was not received")
-
-        status("Connection established — sending acknowledgement…")
+        status(TransferUpdate(TransferState.SENDING_ACKNOWLEDGEMENT, "Connection established — sending acknowledgement…"))
         self.trace("RX1 OK; sending TX2: " + response2)
         self.send_message(response2)
-
-        status("Waiting for the gift request…")
+        status(TransferUpdate(TransferState.WAITING_GIFT_REQUEST, "Waiting for the gift request…"))
         third = self.wait_for_message(cancel, attempts=3)
         if third is None:
             raise RuntimeError("Tamagotchi did not send the second part of the exchange")
-
-        status("Sending the gift…")
+        status(TransferUpdate(TransferState.SENDING_GIFT, "Sending the gift…"))
         if callable(response4):
             response4 = response4(third)
         self.trace("RX3 OK; sending TX4: " + response4)
         self.send_message(response4)
         self.send_message(response4)
         self.trace("TX4 sent twice; exchange complete")
-        status("Gift sent")
 
     def send_friends_reward(
         self,
         outcome: int,
         cancel: threading.Event,
-        status: Callable[[str], None] = lambda _message: None,
+        status: Callable[[TransferUpdate], None] = lambda _update: None,
+        timeout: float = 20.0,
     ) -> None:
-        """Ask the enhanced Companion to broadcast a Friends BFF response."""
         if not 0 <= outcome <= 0xFF:
             raise ValueError("Friends outcome must be between 0 and 255")
-
-        self._buffer.clear()
-        status("Broadcasting the Friends BFF response…")
+        self._clear_input()
+        status(TransferUpdate(TransferState.BROADCASTING, "Broadcasting Friends BFF response · 0/10", 0, 10))
         self.trace(f"Sending LF RFID BFF outcome 0x{outcome:02X}")
         self._write_line(f"tamagometer friends{outcome}")
-        deadline = time.monotonic() + 20.0
-
+        deadline = time.monotonic() + timeout
+        reported = 0
         while time.monotonic() < deadline:
             if cancel.is_set():
-                # The Flipper command checks for Ctrl+C between repetitions.
-                self.serial.write(b"\x03")
-                self.serial.flush()
+                self._write(b"\x03")
                 cancel_deadline = time.monotonic() + 2.0
                 while time.monotonic() < cancel_deadline:
-                    waiting = getattr(self.serial, "in_waiting", 0)
-                    chunk = self.serial.read(max(1, waiting))
+                    chunk = self._read_chunk()
                     if chunk:
                         self._buffer.extend(chunk)
                         if FRIENDS_CANCELLED_TOKEN in self._buffer:
                             break
                 self._buffer.clear()
                 raise CancelledError
-            waiting = getattr(self.serial, "in_waiting", 0)
-            chunk = self.serial.read(max(1, waiting))
+            chunk = self._read_chunk()
             if not chunk:
                 continue
             self._buffer.extend(chunk)
+            for match in FRIENDS_PROGRESS_RE.finditer(self._buffer):
+                current, total = int(match.group(1)), int(match.group(2))
+                if current > reported:
+                    reported = current
+                    status(TransferUpdate(
+                        TransferState.BROADCASTING,
+                        f"Broadcasting Friends BFF response · {current}/{total}",
+                        current,
+                        total,
+                    ))
             if FRIENDS_OK_TOKEN in self._buffer:
                 self.trace("LF RFID broadcast complete")
-                status("BFF reward sent")
+                status(TransferUpdate(TransferState.VERIFYING, "Flipper confirmed the BFF transmission"))
                 self._buffer.clear()
                 return
             if FRIENDS_CANCELLED_TOKEN in self._buffer:
@@ -182,16 +343,14 @@ class FlipperConnection:
             response = self._buffer.decode("utf-8", errors="replace")
             if "Invalid argument" in response or "command not found" in response.casefold():
                 self._buffer.clear()
-                raise RuntimeError(
+                raise IncompatibleCompanionError(
                     "This Flipper app does not support Tamagotchi Friends. "
-                    "Install and open the enhanced Companion included with Tamagometer Desktop."
+                    "Install and open Tamagometer Enhanced Companion 1.1.0 or newer."
                 )
             if len(self._buffer) > 4096:
                 del self._buffer[:-1024]
-
-        response = self._buffer.decode("utf-8", errors="replace")
         self._buffer.clear()
         raise RuntimeError(
             "The Flipper did not confirm the Friends transmission. "
-            "Make sure the enhanced Companion is open."
+            "Keep the enhanced Companion open and try again."
         )

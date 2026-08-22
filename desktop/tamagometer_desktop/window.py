@@ -4,11 +4,19 @@ from __future__ import annotations
 
 from pathlib import Path
 import queue
+import time
 import tkinter as tk
 from tkinter import messagebox, ttk
 
-from flipper_serial import FlipperConnection, list_ports
+from flipper_serial import (
+    FlipperConnection,
+    SerialPortInfo,
+    find_flipper_port,
+    list_ports,
+)
+from transfer_status import TransferState
 
+from . import __version__
 from .modes import CONNECTION_MODE, FRIENDS_MODE, ModeDefinition, get_mode
 from .settings import AppSettings, SettingsStore
 from .theme import ACCENT, LOG_BG, card, configure_theme
@@ -31,11 +39,17 @@ class TamagometerDesktop(tk.Tk):
         self.settings_store = SettingsStore(config_path)
         self.settings = self.settings_store.load()
         self.visible_items: list[tuple[int, str]] = []
+        self.ports: list[SerialPortInfo] = []
+        self.auto_reconnect = False
+        self.reconnect_port = ""
+        self.reconnecting = False
+        self.next_reconnect_at = 0.0
 
         self._build_ui()
         self.refresh_ports()
         self._change_mode()
         self.after(80, self._poll_events)
+        self.after(1200, self._monitor_connection)
         self.protocol("WM_DELETE_WINDOW", self._on_close)
 
     @property
@@ -59,7 +73,7 @@ class TamagometerDesktop(tk.Tk):
         hero = ttk.Frame(root, style="Hero.TFrame", padding=(22, 17))
         hero.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 14))
         hero.columnconfigure(0, weight=1)
-        ttk.Label(hero, text="Tamagometer", style="HeroTitle.TLabel").grid(
+        ttk.Label(hero, text=f"Tamagometer {__version__}", style="HeroTitle.TLabel").grid(
             row=0, column=0, sticky="w",
         )
         ttk.Label(
@@ -190,6 +204,16 @@ class TamagometerDesktop(tk.Tk):
             wraplength=315,
             justify="left",
         ).grid(row=1, column=0, sticky="ew", pady=(7, 14))
+        self.transfer_stage_var = tk.StringVar(value="Ready")
+        ttk.Label(
+            action,
+            textvariable=self.transfer_stage_var,
+            style="Selected.TLabel",
+        ).grid(row=2, column=0, sticky="w", pady=(0, 6))
+        self.transfer_progress = ttk.Progressbar(
+            action, mode="determinate", maximum=10, value=0,
+        )
+        self.transfer_progress.grid(row=3, column=0, sticky="ew", pady=(0, 12))
         self.send_button = ttk.Button(
             action,
             text="Start transfer",
@@ -197,11 +221,11 @@ class TamagometerDesktop(tk.Tk):
             command=self.start_delivery,
             state="disabled",
         )
-        self.send_button.grid(row=2, column=0, sticky="ew")
+        self.send_button.grid(row=4, column=0, sticky="ew")
         self.cancel_button = ttk.Button(
             action, text="Cancel", command=self.cancel_delivery, state="disabled",
         )
-        self.cancel_button.grid(row=3, column=0, sticky="ew", pady=(7, 0))
+        self.cancel_button.grid(row=5, column=0, sticky="ew", pady=(7, 0))
         self._build_diagnostics(side)
 
     def _build_diagnostics(self, side: ttk.Frame) -> None:
@@ -247,19 +271,21 @@ class TamagometerDesktop(tk.Tk):
         self.settings_store.save(self.settings)
 
     def refresh_ports(self) -> None:
-        ports = list_ports()
-        values = [f"{device} — {description}" for device, description in ports]
+        self.ports = list_ports()
+        values = [port.display_name for port in self.ports]
         self.port_combo["values"] = values
-        chosen = next(
-            (value for value in values if value.split(" — ", 1)[0] == self.settings.port),
-            "",
+        selected_device = self.port_var.get().split(" — ", 1)[0]
+        candidate = find_flipper_port(
+            self.ports,
+            selected_device or self.settings.port,
         )
-        self.port_var.set(chosen or (values[0] if values else ""))
+        self.port_var.set(candidate.display_name if candidate else "")
         if not values:
             self.status_var.set("No COM ports found")
 
     def toggle_connection(self) -> None:
         if self.connection.connected:
+            self.auto_reconnect = False
             self.connection.close()
             self.connect_button.configure(text="Connect")
             self.send_button.configure(state="disabled")
@@ -270,16 +296,66 @@ class TamagometerDesktop(tk.Tk):
             messagebox.showwarning("No port selected", "Connect the Flipper and click Refresh.")
             return
         port = selection.split(" — ", 1)[0]
+        self._connect_to(port)
+
+    def _connect_to(self, port: str, automatic: bool = False) -> bool:
+        if self.reconnecting:
+            return False
+        self.reconnecting = True
+        self.status_var.set(f"Checking Companion · {port}")
         try:
-            self.connection.open(port)
+            info = self.connection.open(port)
         except Exception as error:
-            messagebox.showerror("Connection failed", str(error))
-            return
+            if automatic:
+                self._append_log(f"Reconnect failed on {port}: {error}")
+                self.status_var.set(f"Waiting for Flipper · {port}")
+                self.next_reconnect_at = time.monotonic() + 4.0
+            else:
+                messagebox.showerror("Connection failed", str(error))
+                self.status_var.set("Flipper not connected")
+            return False
+        finally:
+            self.reconnecting = False
         self.connect_button.configure(text="Disconnect")
         self.send_button.configure(state="normal")
-        self.status_var.set(f"Connected · {port}")
-        self._append_log(f"Opened {port} at 460800 baud")
+        version = info.version if info else "unknown"
+        self.status_var.set(f"Connected · {port} · Companion {version}")
+        action = "Reconnected" if automatic else "Opened"
+        self._append_log(f"{action} {port} at 460800 baud; Companion {version}")
+        self.auto_reconnect = True
+        self.reconnect_port = port
         self._save_settings()
+        return True
+
+    def _monitor_connection(self) -> None:
+        try:
+            ports = list_ports()
+            devices = {port.device.casefold() for port in ports}
+            if self.connection.connected and self.connection.port.casefold() not in devices:
+                lost_port = self.connection.port
+                self.connection.close()
+                self.connect_button.configure(text="Connect")
+                self.send_button.configure(state="disabled")
+                self.status_var.set(f"Flipper disconnected · waiting for {lost_port}")
+                self._append_log(f"USB connection lost on {lost_port}; automatic reconnect enabled")
+            elif (
+                self.auto_reconnect
+                and not self.connection.connected
+                and not self.transfer.active
+                and time.monotonic() >= self.next_reconnect_at
+            ):
+                candidate = find_flipper_port(ports, self.reconnect_port)
+                if candidate:
+                    self._connect_to(candidate.device, automatic=True)
+            elif not self.connection.connected:
+                self.ports = ports
+                self.port_combo["values"] = [port.display_name for port in ports]
+                if not self.port_var.get():
+                    candidate = find_flipper_port(ports, self.settings.port)
+                    if candidate:
+                        self.port_var.set(candidate.display_name)
+        finally:
+            self.after(1200, self._monitor_connection)
 
     def _change_mode(self) -> None:
         mode = self.current_mode
@@ -341,7 +417,7 @@ class TamagometerDesktop(tk.Tk):
         mode = self.current_mode
         self._append_log(f"--- {mode.attempt_label}: {item_name}, ID {item_id} ---")
         self._set_busy(True)
-        self.status_var.set(f"Preparing · {item_name}")
+        self.transfer_progress.configure(value=0, maximum=10)
         self.transfer.start(mode, item_id, item_name)
 
     def cancel_delivery(self) -> None:
@@ -356,8 +432,14 @@ class TamagometerDesktop(tk.Tk):
                     self._append_log(event.text)
                     continue
                 self.status_var.set(event.text)
+                self.transfer_stage_var.set(event.text)
                 self._append_log(event.text)
-                if event.kind in {"done", "cancelled", "error"}:
+                if event.current is not None and event.total:
+                    self.transfer_progress.configure(maximum=event.total, value=event.current)
+                elif event.state == TransferState.COMPLETED:
+                    maximum = float(self.transfer_progress.cget("maximum"))
+                    self.transfer_progress.configure(value=maximum)
+                if event.kind in {"done", "cancelled", "error", "disconnected"}:
                     self._set_busy(False)
                 if event.kind == "done":
                     messagebox.showinfo("Transfer complete", event.text)

@@ -15,6 +15,17 @@ and Tamagotchi Friends BFF reward support over low-frequency RFID.
 Tamagotchi Friends support currently covers the receiver side of **BFF BUMP**.
 Exchange, Visit Bump, Mail, and Special modes are not implemented.
 
+## Version 1.1 reliability improvements
+
+Desktop 1.1 and Companion 1.1 use a versioned capability handshake before any
+transfer begins. The desktop automatically identifies a likely Flipper COM
+port, reconnects after a USB interruption, reports each transfer stage, and
+shows all 10 Friends broadcast repetitions. An older or incomplete Companion
+is rejected immediately with an update instruction.
+
+Desktop 1.1 requires Tamagometer Enhanced Companion 1.1.0 or newer. Install
+the `.exe` and `.fap` from the same release.
+
 ## Downloads
 
 Ready-to-use builds are published on the
@@ -35,6 +46,10 @@ official Flipper release SDK available when the release is created.
 4. On the Flipper, open **Apps → Tools → Tamagometer Enhanced** and leave it open.
 5. Download and start `TamagometerDesktop.exe` from the same release.
 6. Select the Flipper COM port and click **Connect**.
+
+The likely Flipper port is selected automatically. After a successful manual
+connection, unplugging and reconnecting the same Flipper triggers automatic
+reconnection and another Companion compatibility check.
 
 The enhanced companion replaces the original Catalog Companion for this
 desktop application. It retains Connection infrared support and adds the
@@ -58,8 +73,8 @@ the gift.
 3. On Tamagotchi Friends, open **BFF BUMP** and start a bump.
 4. Hold the back of the Tamagotchi directly against the Flipper's LF RFID
    antenna.
-5. Click **Send BFF reward** and keep the devices together until completion,
-   which takes about 12 seconds.
+5. Click **Send BFF reward** and keep the devices together while the progress
+   indicator advances from 0/10 to 10/10 (about 12 seconds).
 
 ## Clone the repository
 
@@ -123,8 +138,8 @@ Tags matching `v*` additionally create a GitHub Release containing the Windows
 executable, Flipper application, generated release notes, and checksums:
 
 ```powershell
-git tag v1.0.0
-git push origin v1.0.0
+git tag v1.1.0
+git push origin v1.1.0
 ```
 
 ## Repository layout
