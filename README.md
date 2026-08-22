@@ -47,7 +47,7 @@ Ready-to-use builds are published on the
 [GitHub Releases page](https://github.com/MintCarasique/tamagometer-enhanced/releases):
 
 - [Download `TamagometerDesktop.exe`](https://github.com/MintCarasique/tamagometer-enhanced/releases/latest/download/TamagometerDesktop.exe)
-- [Download `TamagometerEnhanced.fap`](https://github.com/MintCarasique/tamagometer-enhanced/releases/latest/download/TamagometerEnhanced.fap)
+- [Download `tamagometer_enhanced.fap`](https://github.com/MintCarasique/tamagometer-enhanced/releases/latest/download/tamagometer_enhanced.fap)
 
 Each release also includes `SHA256SUMS.txt`. The FAP is built with the latest
 official Flipper release SDK available when the release is created.
@@ -55,7 +55,7 @@ official Flipper release SDK available when the release is created.
 ## Installation
 
 1. Connect the Flipper Zero and open qFlipper.
-2. Download `TamagometerEnhanced.fap` from the latest GitHub Release and copy
+2. Download `tamagometer_enhanced.fap` from the latest GitHub Release and copy
    it to `SD Card/apps/Tools`.
 3. Close qFlipper so it releases the USB serial port.
 4. On the Flipper, open **Apps → Tools → Tamagometer Enhanced** and leave it open.
@@ -142,7 +142,7 @@ cd flipper
 ufbt
 ```
 
-The generated application is written to `flipper/dist/tamagometer_companion.fap`.
+The generated application is written to `flipper/dist/tamagometer_enhanced.fap`.
 
 ### Continuous integration and releases
 

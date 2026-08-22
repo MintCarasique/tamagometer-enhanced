@@ -62,7 +62,7 @@ class OnboardingWindow(tk.Toplevel):
             ),
             (
                 "Install and open the Companion",
-                "Copy TamagometerEnhanced.fap to SD Card/apps/Tools, close qFlipper, then open Apps → Tools → Tamagometer Enhanced on the Flipper.",
+                "Copy tamagometer_enhanced.fap to SD Card/apps/Tools, close qFlipper, then open Apps → Tools → Tamagometer Enhanced on the Flipper.",
                 "Leave the Companion open and connect Flipper by USB.",
             ),
             (

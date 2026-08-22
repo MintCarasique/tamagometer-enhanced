@@ -101,13 +101,13 @@ jobs:
           mkdir -p release
           source_fap="$(find flipper/dist -maxdepth 1 -type f -name '*.fap' -print -quit)"
           test -n "$source_fap"
-          cp "$source_fap" release/TamagometerEnhanced.fap
+          cp "$source_fap" release/tamagometer_enhanced.fap
 
       - name: Upload Flipper artifact
         uses: actions/upload-artifact@v7
         with:
           name: TamagometerEnhanced-flipper
-          path: release/TamagometerEnhanced.fap
+          path: release/tamagometer_enhanced.fap
           if-no-files-found: error
           retention-days: 14
 
@@ -135,14 +135,14 @@ jobs:
 
       - name: Generate checksums
         working-directory: release
-        run: sha256sum TamagometerDesktop.exe TamagometerEnhanced.fap > SHA256SUMS.txt
+        run: sha256sum TamagometerDesktop.exe tamagometer_enhanced.fap > SHA256SUMS.txt
 
       - name: Create release and upload binaries
         uses: softprops/action-gh-release@v3
         with:
           files: |
             release/TamagometerDesktop.exe
-            release/TamagometerEnhanced.fap
+            release/tamagometer_enhanced.fap
             release/SHA256SUMS.txt
           fail_on_unmatched_files: true
           generate_release_notes: true

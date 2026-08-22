@@ -31,7 +31,7 @@ desktop therefore avoids presenting a guessed mapping.
 
 Friends does not use infrared, so the original Tamagometer Companion from the
 Flipper Catalog is not sufficient. Download
-[`TamagometerEnhanced.fap`](https://github.com/MintCarasique/tamagometer-enhanced/releases/latest/download/TamagometerEnhanced.fap)
+[`tamagometer_enhanced.fap`](https://github.com/MintCarasique/tamagometer-enhanced/releases/latest/download/tamagometer_enhanced.fap)
 from the latest GitHub Release:
 
 1. Connect the Flipper and open qFlipper.
