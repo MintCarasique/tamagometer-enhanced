@@ -13,7 +13,7 @@ The app is unofficial and is not affiliated with Bandai.
 
 Friends does not use infrared, so the original Tamagometer Companion from the
 Flipper Catalog is not sufficient. Install the bundled
-[`tamagometer_enhanced.fap`](flipper/dist/tamagometer_enhanced.fap):
+[`TamagometerEnhanced.fap`](../artifacts/TamagometerEnhanced.fap):
 
 1. Connect the Flipper and open qFlipper.
 2. Copy the `.fap` to `SD Card/apps/Tools`.
@@ -66,7 +66,7 @@ Run the protocol tests with:
 python -m unittest discover -s tests -v
 ```
 
-The Flipper source is in [`flipper/`](flipper/) and builds with
+The Flipper source is in the repository's [`flipper/`](../flipper/) submodule and builds with
 [uFBT](https://github.com/flipperdevices/flipperzero-ufbt).
 
 ## Protocol sources

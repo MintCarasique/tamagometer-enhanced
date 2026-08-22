@@ -1,4 +1,20 @@
-Check out the web app here: https://zacharesmer.github.io/tamagometer/
+# Tamagometer Enhanced
+
+This fork adds a modern Windows desktop application and support for
+**Tamagotchi Friends BFF BUMP** through the Flipper Zero's LF RFID hardware,
+while retaining the original Tamagotchi Connection 2024 infrared features.
+
+- Desktop source and tests: [`desktop/`](desktop/)
+- Enhanced Flipper companion source: [`flipper/`](flipper/)
+- Ready-to-install Windows and Flipper builds: [`artifacts/`](artifacts/)
+
+Friends support has been verified successfully with a physical Tamagotchi
+Friends and Flipper Zero. See the [desktop instructions](desktop/README.md) for
+installation and usage.
+
+## Original web application
+
+Check out the original web app here: https://zacharesmer.github.io/tamagometer/
 
 # Hardware
 ## Flipper Zero
