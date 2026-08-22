@@ -69,6 +69,20 @@ python -m unittest discover -s tests -v
 The Flipper source is in the repository's [`flipper/`](../flipper/) submodule and builds with
 [uFBT](https://github.com/flipperdevices/flipperzero-ufbt).
 
+## Desktop architecture
+
+`app.py` is intentionally limited to application startup. The desktop package
+is split by responsibility:
+
+- `tamagometer_desktop/window.py` — Tk window and UI event handling;
+- `tamagometer_desktop/theme.py` — colors and ttk styles;
+- `tamagometer_desktop/modes.py` — supported modes and item catalogs;
+- `tamagometer_desktop/settings.py` — configuration persistence;
+- `tamagometer_desktop/transfer.py` — background transfer orchestration.
+
+Protocol encoding and serial transport remain isolated in `tamagometer_core.py`,
+`friends_core.py`, and `flipper_serial.py`.
+
 ## Protocol sources
 
 Connection support is derived from Zach Resmer's MIT-licensed
