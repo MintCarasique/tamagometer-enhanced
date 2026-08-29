@@ -12,13 +12,22 @@ from transfer_status import TransferState, TransferUpdate
 
 
 BAUD_RATE = 460_800
-MIN_COMPANION_VERSION = (1, 1, 0)
-REQUIRED_CAPABILITIES = frozenset({"connection_ir", "friends_lf", "friends_progress"})
+MIN_COMPANION_VERSION = (2, 0, 0)
+REQUIRED_CAPABILITIES = frozenset({
+    "connection_ir",
+    "connection_legacy",
+    "friends_lf",
+    "friends_progress",
+})
 COMMAND_RE = re.compile(rb"\[PICO\]([01]{160})\[END\]")
 INFO_RE = re.compile(
     rb"\[TAMAGOMETER\]version=([^;\]]+);protocol=(\d+);capabilities=([a-z0-9_,.-]+)\[END\]",
 )
 FRIENDS_PROGRESS_RE = re.compile(rb"\[TAMAFRIENDS\]progress=(\d+)/(\d+)\[END\]")
+LEGACY_PROGRESS_RE = re.compile(rb"\[TAMALEGACY\]progress=(\d+)/(\d+)\[END\]")
+LEGACY_RESULT_RE = re.compile(
+    rb"\[TAMALEGACY\]result=([^;\]]+);activity=([^;\]]+);peer=([^;\]]+)\[END\]",
+)
 TIMEOUT_TOKEN = b"[PICO]timed out[END]"
 FRIENDS_OK_TOKEN = b"[TAMAFRIENDS]ok[END]"
 FRIENDS_CANCELLED_TOKEN = b"[TAMAFRIENDS]cancelled[END]"
@@ -208,10 +217,10 @@ class FlipperConnection:
                         elif info.protocol != 1:
                             details = f"unsupported protocol {info.protocol}"
                         else:
-                            details = "version 1.1.0 or newer is required"
+                            details = "version 2.0.0 or newer is required"
                         raise IncompatibleCompanionError(
                             f"Companion {info.version} is incompatible ({details}). "
-                            "Install and open Tamagometer Enhanced Companion 1.1.0 or newer."
+                            "Install and open Tamagometer Enhanced Companion 2.0.0 or newer."
                         )
                     self.companion = info
                     return info
@@ -222,8 +231,8 @@ class FlipperConnection:
                     del self._buffer[:-1024]
         self._buffer.clear()
         raise IncompatibleCompanionError(
-            "The open Flipper app does not support the 1.1 capability handshake. "
-            "Install and open Tamagometer Enhanced Companion 1.1.0 or newer."
+            "The open Flipper app does not support the required capability handshake. "
+            "Install and open Tamagometer Enhanced Companion 2.0.0 or newer."
         )
 
     def send_message(self, bits: str) -> None:
@@ -345,7 +354,7 @@ class FlipperConnection:
                 self._buffer.clear()
                 raise IncompatibleCompanionError(
                     "This Flipper app does not support Tamagotchi Friends. "
-                    "Install and open Tamagometer Enhanced Companion 1.1.0 or newer."
+                    "Install and open Tamagometer Enhanced Companion 2.0.0 or newer."
                 )
             if len(self._buffer) > 4096:
                 del self._buffer[:-1024]
@@ -354,3 +363,62 @@ class FlipperConnection:
             "The Flipper did not confirm the Friends transmission. "
             "Keep the enhanced Companion open and try again."
         )
+
+    def run_legacy_fallback(
+        self,
+        cancel: threading.Event,
+        status: Callable[[TransferUpdate], None] = lambda _update: None,
+        timeout: float = 90.0,
+    ) -> tuple[str, str]:
+        """Run one original V2/V3 compatibility exchange on the Flipper."""
+        self._clear_input()
+        self.trace("Starting original V2/V3 compatibility fallback")
+        self._write_line("tamagometer legacy")
+        deadline = time.monotonic() + timeout
+        highest_progress = -1
+        progress_states = {
+            5: (TransferState.WAITING_FIRST_MESSAGE, "Waiting for original Tamagotchi…"),
+            35: (TransferState.SENDING_ACKNOWLEDGEMENT, "Sending legacy identity…"),
+            55: (TransferState.WAITING_GIFT_REQUEST, "Waiting for random activity request…"),
+            85: (TransferState.SENDING_RESULT, "Sending game or gift result…"),
+        }
+        while time.monotonic() < deadline:
+            if cancel.is_set():
+                self._write(b"\x03")
+                self._buffer.clear()
+                raise CancelledError
+            chunk = self._read_chunk()
+            if not chunk:
+                continue
+            self._buffer.extend(chunk)
+            for match in LEGACY_PROGRESS_RE.finditer(self._buffer):
+                current, total = int(match.group(1)), int(match.group(2))
+                if current <= highest_progress or current not in progress_states:
+                    continue
+                highest_progress = current
+                state, text = progress_states[current]
+                status(TransferUpdate(state, text, current, total))
+            result_match = LEGACY_RESULT_RE.search(self._buffer)
+            if result_match:
+                result, activity, peer = (
+                    group.decode("ascii") for group in result_match.groups()
+                )
+                self._buffer.clear()
+                self.trace(f"Legacy result: {result}; activity={activity}; peer={peer}")
+                if result != "Transfer complete":
+                    if result == "Transfer cancelled":
+                        raise CancelledError
+                    raise RuntimeError(result)
+                return activity, peer
+            response = self._buffer.decode("utf-8", errors="replace")
+            if "Invalid argument" in response or "command not found" in response.casefold():
+                self._buffer.clear()
+                raise IncompatibleCompanionError(
+                    "This Flipper app does not support original V2/V3 fallback. "
+                    "Install the matching Tamagometer Enhanced Companion."
+                )
+            if len(self._buffer) > 8192:
+                del self._buffer[:-2048]
+        self._write(b"\x03")
+        self._buffer.clear()
+        raise RuntimeError("The original Tamagotchi exchange timed out")

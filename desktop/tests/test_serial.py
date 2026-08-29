@@ -4,6 +4,7 @@ import unittest
 from flipper_serial import (
     FRIENDS_CANCELLED_TOKEN,
     FRIENDS_OK_TOKEN,
+    LEGACY_RESULT_RE,
     TIMEOUT_TOKEN,
     CancelledError,
     FlipperConnection,
@@ -18,8 +19,8 @@ from transfer_status import TransferState
 
 INCOMING = "00001110" + "00000110" + "0" * 144
 INFO = (
-    b"[TAMAGOMETER]version=1.1.0;protocol=1;"
-    b"capabilities=connection_ir,friends_lf,friends_progress[END]"
+    b"[TAMAGOMETER]version=2.0.0-dev;protocol=1;"
+    b"capabilities=connection_ir,connection_legacy,friends_lf,friends_progress[END]"
 )
 
 
@@ -53,6 +54,15 @@ class FakeSerial:
             for repeat in range(1, 11):
                 self.input.extend(f"[TAMAFRIENDS]progress={repeat}/10[END]".encode("ascii"))
             self.input.extend(FRIENDS_OK_TOKEN)
+        elif line == "tamagometer legacy":
+            for progress in (5, 35, 55, 85, 100):
+                self.input.extend(
+                    f"[TAMALEGACY]progress={progress}/100[END]".encode("ascii")
+                )
+            self.input.extend(
+                b"[TAMALEGACY]result=Transfer complete;"
+                b"activity=Balloon game;peer=v2[END]"
+            )
         return len(data)
 
     def read(self, size):
@@ -77,7 +87,7 @@ class SerialFlowTests(unittest.TestCase):
 
         info = connection.get_info(timeout=0.2)
 
-        self.assertEqual(info.version, "1.1.0")
+        self.assertEqual(info.version, "2.0.0-dev")
         self.assertEqual(info.protocol, 1)
         self.assertIn("friends_progress", info.capabilities)
 
@@ -88,7 +98,7 @@ class SerialFlowTests(unittest.TestCase):
                 self.input.extend(b"Invalid argument(s). Use listen or send<bits>.\r\n")
                 return len(data)
 
-        with self.assertRaisesRegex(IncompatibleCompanionError, "1.1"):
+        with self.assertRaisesRegex(IncompatibleCompanionError, "2.0"):
             FlipperConnection(OldSerial()).get_info(timeout=0.05)
 
     def test_gift_exchange_uses_listen_send_listen_send_send(self):
@@ -165,6 +175,30 @@ class SerialFlowTests(unittest.TestCase):
         with self.assertRaises(CancelledError):
             FlipperConnection(fake).send_friends_reward(1, cancel)
         self.assertEqual(fake.output, ["tamagometer friends1", "<ETX>"])
+
+    def test_legacy_fallback_reports_activity_and_progress(self):
+        fake = FakeSerial(chunk_size=5)
+        updates = []
+        connection = FlipperConnection(fake)
+
+        activity, peer = connection.run_legacy_fallback(
+            threading.Event(), updates.append, timeout=0.2,
+        )
+
+        self.assertEqual(fake.output, ["tamagometer legacy"])
+        self.assertEqual((activity, peer), ("Balloon game", "v2"))
+        self.assertEqual(
+            [update.state for update in updates],
+            [
+                TransferState.WAITING_FIRST_MESSAGE,
+                TransferState.SENDING_ACKNOWLEDGEMENT,
+                TransferState.WAITING_GIFT_REQUEST,
+                TransferState.SENDING_RESULT,
+            ],
+        )
+        self.assertIsNotNone(LEGACY_RESULT_RE.search(
+            b"[TAMALEGACY]result=Transfer complete;activity=Random gift;peer=v3[END]",
+        ))
 
     def test_friends_confirmation_timeout_is_reported(self):
         class SilentSerial(FakeSerial):

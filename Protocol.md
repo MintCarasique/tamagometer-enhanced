@@ -1,5 +1,133 @@
 # Tamagotchi IR data format
 
+## Original Connection V2/V3 compatibility mode
+
+An observed original Connection V2 (`Version 1`) to original Connection V3
+(`Others`) session uses a legacy variant of the IR framing:
+
+- 38 kHz carrier, approximately 9600 us leader mark and 2400 us leader space;
+- data bits are transmitted least-significant bit first within each byte;
+- frames can contain 9, 18, or 20 bytes;
+- the final byte is the unsigned sum of all preceding bytes;
+- `0x0C` is the first byte in every observed frame.
+
+Captured sessions contain four logical messages. The initial message can be
+transmitted twice. Device identity bytes are intentionally omitted:
+
+| Role | Length | Type byte | Notes |
+|--|--:|--:|--|
+| Initiator | 18 bytes (V2) or 20 bytes (V3) | `0x00` | Initial identity packet |
+| Responder | 18 bytes (V2) or 20 bytes (V3) | `0x01` | Identity response |
+| Initiator | 9 bytes | Even type | Action packet |
+| Responder | 9 bytes | Following odd type | Final action packet |
+
+### Hardware-verified Flipper fallback
+
+The standalone Flipper app implements the responder side of this compatibility
+exchange. It detects an 18-byte V2 or 20-byte V3 initial packet and answers with
+a fixed identity for the opposite generation. It then accepts the following
+9-byte action packet and returns its matching odd action type.
+
+The current implementation recognizes `0x04/0x05` (tug-of-war, inferred from
+the documented three-game rotation), `0x06/0x07` (balloon), `0x08/0x09`
+(quick eating), and `0x0A/0x0B` (gift). Only the responder-win game payload has
+been observed and is emitted for all three games. Gift payloads request the
+random, receiver-selected gift path; they do not select a concrete inventory
+item. This feature must remain marked experimental until more hardware outcomes
+are captured.
+
+The exchange is verified on an original V2 and original V3. Legacy timing is
+strict: the responder begins roughly 100–130 ms after the preceding frame ends.
+Flipper's normal raw-remote helper inserts an additional 180 ms leading silence,
+which is too long and causes the initiator to retry. The implementation therefore
+uses the asynchronous infrared HAL directly for legacy transmission while
+retaining a 38 kHz carrier and 33% duty cycle.
+
+Outcome-labelled captures show that the short-message type pair identifies the
+activity, independently of whether V2 or V3 initiated it:
+
+| Initiator type | Responder type | Activity |
+|--:|--:|--|
+| `0x06` | `0x07` | Jumping/balloon-inflation game |
+| `0x08` | `0x09` | Speed-eating game |
+| `0x0A` | `0x0B` | Gift delivery |
+
+Confirmed field relationships from those sessions:
+
+- bytes 3-4 remain stable for each sender and act as a device/session identity;
+- byte 8 of a 9-byte packet matches the first identity byte of the peer;
+- byte 13 of the responder's full `0x01` message is copied into byte 7 of that
+  responder's final 9-byte message;
+- `0x59` in byte 6 of V2 `0x0A` packets is not an item ID: it is constant and
+  also appears in V2's full identity message.
+
+The exact gift/item field has not yet been confirmed.
+
+### Balloon jumping game
+
+Five outcome-labelled V2/V3 compatibility sessions confirmed that the
+jumping/balloon-inflation game uses type pair `0x06` / `0x07`:
+
+| Role | Message sequence | Observed result |
+|--|--|--|
+| Initiator | Full `0x00`, then short `0x06` | Lost in all five labelled samples |
+| Responder | Full `0x01`, then short `0x07` | Won in all five labelled samples |
+
+Byte 5 of the short game packets was `0x00` for every losing initiator and
+`0x01` for every winning responder. It is therefore a strong candidate for the
+game result flag, but a capture in which the initiator wins is required to
+confirm it. Byte 6 was zero in all labelled short game packets. A sixth capture
+without a recorded initiator or winner has the same layout and predicts that
+V3 initiated and V2 won.
+
+Byte 7 is sender-specific session data. For the responder it matches byte 13
+of its earlier full `0x01` message. Byte 14 of the full response advanced in
+BCD order from `0x07` through `0x18`, with a later capture containing `0x20`
+and no recorded `0x19` sample. This strongly suggests a connection or
+relationship counter, although its exact meaning still needs confirmation.
+
+### Speed-eating game
+
+Two outcome-labelled sessions confirmed that the speed-eating game uses type
+pair `0x08` / `0x09`. V2 initiated and sent `0x08`; V3 responded with `0x09`
+and won in both samples. As in the balloon game, byte 5 was `0x00` for the
+losing initiator and `0x01` for the winning responder, while byte 6 was zero.
+This supports a common result-field layout for game packets. A capture in
+which the initiator wins is still required to prove that the flag represents
+the outcome rather than the role.
+
+### Legacy V2/V3 gifts
+
+Four labelled sessions confirmed that gifts use type pair `0x0A` / `0x0B`, in
+both connection directions:
+
+| Initiator | Gift sender | Gift received | Final responder payload (bytes 5-8) |
+|--|--|--|--|
+| V2 | V3 | Cake | `00 10 35 3A` |
+| V3 | V2 | Flower | `00 11 57 05` |
+| V3 | V2 | Black heart (negative) | `00 11 67 05` |
+| V2 | V3 | Snake (negative) | `00 12 55 3A` |
+| V3 | V2 | Snake (negative) | `00 11 69 05` |
+
+The initiator receives the gift and the responder sends it. Byte 7 of the
+responder's final packet again matches byte 13 of its full `0x01` response.
+Byte 6 is not a gift ID: flower and black heart were different gifts but both
+used `0x11`. The changing byte 7 values also form a progression in captures
+from the same sender (`0x35`, `0x45`, `0x55` for V3 and `0x57`, `0x67` for V2),
+so they are more likely relationship or game-state values than item codes.
+
+No field in the four initially observed gift exchanges showed a stable one-to-one
+mapping to the displayed gift. One plausible interpretation is that the short
+packets request a gift interaction and the receiving Tamagotchi chooses the
+visible item locally from its state or random number generator. This is a
+hypothesis, not a confirmed protocol property. The initiator's `0x0A` payload
+also appears to retain state from an earlier connection and must not be
+interpreted as the newly received item without further evidence.
+
+A later capture was also labelled as a snake, but its final payload was
+`00 11 69 05`, different from the earlier snake payload `00 12 55 3A`. This is
+additional evidence against a direct item ID in these four bytes.
+
 ## Visits
 
 The tamagotchi that initiates the visit goes over to the tamagotchi that was waiting for the visit.

@@ -1,20 +1,22 @@
 # Tamagometer Desktop
 
 A focused Windows utility for interacting with Tamagotchi devices through a
-Flipper Zero. The interface supports two distinct protocols:
+Flipper Zero. The interface supports three distinct protocols:
 
 - **Tamagotchi Connection v3 2024 re-release** — send any of 181 gifts over IR.
 - **Tamagotchi Friends** — choose one of 60 jewelry outcomes or a 200–1,000
   Gotchi Point reward for BFF BUMP over low-frequency RFID.
+- **Original Connection V2/V3** — run the hardware-verified `Version 1` /
+  `Others` random game-or-gift compatibility fallback over IR.
 
 The app is unofficial and is not affiliated with Bandai.
 
-## Desktop 1.2 UI
+## Desktop 2.0 UI
 
 The current development version adds first-run setup and automatic connection,
 an animated IR/LF placement guide, light and dark themes, inline notifications,
 real transfer progress, categories, favorites, recently sent items, **Repeat
-last transfer**, and single-file diagnostic export.
+last transfer**, single-file diagnostic export, and original V2/V3 fallback.
 
 Connection item previews reuse the sprites already present in the upstream
 Tamagometer web interface. The upstream set provides a usable image for 171 of
@@ -44,8 +46,8 @@ The enhanced companion retains Connection IR support, so it replaces the
 Catalog version for both modes. Release FAPs are built with the latest official
 Flipper release SDK available at build time.
 
-Desktop 1.1 performs a capability handshake during connection and therefore
-requires Tamagometer Enhanced Companion 1.1.0 or newer. It automatically picks
+Desktop 2.0 performs a capability handshake during connection and requires the
+matching Tamagometer Enhanced Companion 2.0.0 or newer. It automatically picks
 a likely Flipper COM port and reconnects when a previously connected Flipper
 returns after a USB interruption.
 
@@ -58,6 +60,17 @@ returns after a USB interruption.
 
 The physical Tamagotchi initiates the exchange because the initiator receives
 the gift.
+
+## Original Connection V2/V3 fallback
+
+1. Select **Original V2/V3 · IR** and connect the COM port.
+2. Click **Start fallback**.
+3. On V2 choose **Version 1**, or on V3 choose **Others**, and start the
+   connection.
+4. Align the IR ports until the Desktop reports the random activity and peer.
+
+Games currently use the captured responder-win result. Gifts are chosen by the
+receiving Tamagotchi rather than selected by the Desktop.
 
 ## Tamagotchi Friends BFF rewards
 

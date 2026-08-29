@@ -13,6 +13,7 @@ class TransferState(str, Enum):
     SENDING_ACKNOWLEDGEMENT = "sending_acknowledgement"
     WAITING_GIFT_REQUEST = "waiting_gift_request"
     SENDING_GIFT = "sending_gift"
+    SENDING_RESULT = "sending_result"
     BROADCASTING = "broadcasting"
     VERIFYING = "verifying"
     CANCELLING = "cancelling"

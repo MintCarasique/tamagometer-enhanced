@@ -59,7 +59,21 @@ FRIENDS_MODE = ModeDefinition(
     hexadecimal_ids=True,
 )
 
-MODES = {mode.key: mode for mode in (CONNECTION_MODE, FRIENDS_MODE)}
+LEGACY_MODE = ModeDefinition(
+    key="legacy",
+    selector_label="Original V2/V3 · IR",
+    picker_title="Compatibility fallback",
+    picker_hint="Automatic random game or gift through the Flipper app",
+    instructions=(
+        "Click Start fallback first. On V2 choose Version 1, or on V3 choose "
+        "Others, start the connection, and align the IR ports."
+    ),
+    send_label="Start fallback",
+    attempt_label="Original fallback",
+    items=((0, "Automatic game or gift"),),
+)
+
+MODES = {mode.key: mode for mode in (CONNECTION_MODE, FRIENDS_MODE, LEGACY_MODE)}
 
 
 def get_mode(key: str) -> ModeDefinition:

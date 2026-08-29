@@ -16,6 +16,8 @@ for this fork are hosted in this repository.
 | --- | --- | --- | --- |
 | Tamagotchi Connection v3 2024 re-release | Infrared | Send any of 181 gifts | Verified on hardware |
 | Tamagotchi Friends | LF RFID | BFF BUMP: 60 jewelry outcomes and 200–1,000 Gotchi Points | Verified on hardware |
+| Original Tamagotchi Connection V2 | Infrared | V1-compatible random game/gift fallback | Verified on hardware; experimental protocol |
+| Original Tamagotchi Connection V3 | Infrared | `Others` random game/gift fallback | Verified on hardware; experimental protocol |
 
 Tamagotchi Friends support currently covers the receiver side of **BFF BUMP**.
 Exchange, Visit Bump, Mail, and Special modes are not implemented.
@@ -37,6 +39,8 @@ The current development version adds guided first-run setup, automatic Flipper
 connection, animated IR/LF placement instructions, real progress, favorites,
 recent history, gift categories, Connection item sprites, light/dark themes,
 inline notifications, repeat-last-transfer, and one-file diagnostic export.
+It also exposes the original V2/V3 compatibility fallback through the same
+guided Desktop interface and reports its live protocol stages.
 
 Friends jewelry names remain numbered until a complete ID-to-name mapping can
 be verified; the application does not label outcomes from an incomplete list.
@@ -47,6 +51,13 @@ The `feature/standalone-flipper-app` branch develops Tamagometer Enhanced 2.0
 as a hybrid application: gifts can be selected and sent entirely on Flipper,
 while the existing Desktop CLI remains available. Connection items are grouped
 into categories so the 181-item catalog never needs to be browsed as one list.
+The development FAP also includes a passive Connection Sniffer for recording
+original V1/V2/V3 infrared sessions as decoded bytes and raw timings.
+It can also act as the other side of the observed V2 `Version 1` / V3 `Others`
+compatibility exchange. This fallback is experimental: the physical Tamagotchi
+chooses a random game or gift, and the first implementation uses only the
+captured responder-win game result. Both the standalone and Desktop-driven
+flows have been verified with an original Connection V2 and V3.
 
 ## Downloads
 
@@ -87,6 +98,18 @@ because both register the same `tamagometer` USB CLI command.
 
 The physical Tamagotchi initiates this exchange because the initiator receives
 the gift.
+
+## Original Connection V2/V3 fallback
+
+1. Select **Original V2/V3 · IR** and click **Start fallback**.
+2. On an original V2 choose **Version 1**, or on an original V3 choose
+   **Others**.
+3. Start the connection and point the Tamagotchi IR window at the Flipper.
+4. Keep both devices still until the activity and peer model are reported.
+
+The Tamagotchi randomly chooses a game or gift. The current game response uses
+the hardware-captured responder-win outcome; a concrete gift cannot be chosen
+because the receiving Tamagotchi determines the displayed gift locally.
 
 ## Sending a Tamagotchi Friends BFF reward
 
@@ -160,8 +183,8 @@ Tags matching `v*` additionally create a GitHub Release containing the Windows
 executable, Flipper application, generated release notes, and checksums:
 
 ```powershell
-git tag v1.1.0
-git push origin v1.1.0
+git tag v2.0.0
+git push origin v2.0.0
 ```
 
 ## Repository layout

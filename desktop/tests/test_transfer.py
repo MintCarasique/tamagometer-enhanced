@@ -3,7 +3,7 @@ import threading
 import unittest
 
 from flipper_serial import CancelledError, SerialDisconnectedError
-from tamagometer_desktop.modes import CONNECTION_MODE, FRIENDS_MODE
+from tamagometer_desktop.modes import CONNECTION_MODE, FRIENDS_MODE, LEGACY_MODE
 from tamagometer_desktop.transfer import TransferController
 from transfer_status import TransferState, TransferUpdate
 
@@ -29,6 +29,16 @@ class FakeConnection:
             raise self.failure
         status(TransferUpdate(TransferState.BROADCASTING, "Broadcasting", 10, 10))
         status(TransferUpdate(TransferState.VERIFYING, "Verified"))
+
+    def run_legacy_fallback(self, cancel, status):
+        self.calls.append(("legacy",))
+        status(TransferUpdate(TransferState.WAITING_FIRST_MESSAGE, "Waiting"))
+        status(TransferUpdate(TransferState.SENDING_ACKNOWLEDGEMENT, "Acknowledging"))
+        status(TransferUpdate(TransferState.WAITING_GIFT_REQUEST, "Waiting request"))
+        status(TransferUpdate(TransferState.SENDING_RESULT, "Sending result"))
+        if self.failure:
+            raise self.failure
+        return "Balloon game", "v2"
 
 
 class TransferControllerTests(unittest.TestCase):
@@ -65,6 +75,22 @@ class TransferControllerTests(unittest.TestCase):
         self.assertEqual(calls, [("friends", 255)])
         progress = [(event.current, event.total) for event in events if event.current is not None]
         self.assertEqual(progress, [(0, 10), (10, 10)])
+        self.assertEqual(controller.state, TransferState.COMPLETED)
+
+    def test_legacy_fallback_uses_companion_command(self):
+        calls, events, controller = self._run(
+            LEGACY_MODE, 0, "Automatic game or gift",
+        )
+        self.assertEqual(calls, [("legacy",)])
+        states = [event.state for event in events if event.kind == "state"]
+        self.assertEqual(states, [
+            TransferState.PREPARING,
+            TransferState.WAITING_FIRST_MESSAGE,
+            TransferState.SENDING_ACKNOWLEDGEMENT,
+            TransferState.WAITING_GIFT_REQUEST,
+            TransferState.SENDING_RESULT,
+            TransferState.COMPLETED,
+        ])
         self.assertEqual(controller.state, TransferState.COMPLETED)
 
     def test_reports_cancellation(self):

@@ -28,7 +28,7 @@ from .catalog import (
     sprite_filename,
 )
 from .diagnostics import build_diagnostic_report
-from .modes import CONNECTION_MODE, FRIENDS_MODE, ModeDefinition, get_mode
+from .modes import CONNECTION_MODE, FRIENDS_MODE, LEGACY_MODE, ModeDefinition, get_mode
 from .onboarding import OnboardingWindow
 from .settings import AppSettings, SettingsStore
 from .theme import card, configure_theme
@@ -113,7 +113,7 @@ class TamagometerDesktop(tk.Tk):
         )
         ttk.Label(
             hero,
-            text="Connection gifts and Friends BFF rewards with Flipper Zero",
+            text="Connection gifts, original V2/V3 fallback, and Friends rewards",
             style="HeroText.TLabel",
         ).grid(row=1, column=0, sticky="w", pady=(2, 0))
         right = ttk.Frame(hero, style="Hero.TFrame")
@@ -148,6 +148,11 @@ class TamagometerDesktop(tk.Tk):
             variable=self.mode_var, command=self._change_mode, style="Mode.TRadiobutton",
         )
         self.friends_mode.pack(side="left", padx=(6, 0))
+        self.legacy_mode = ttk.Radiobutton(
+            mode_card, text=LEGACY_MODE.selector_label, value=LEGACY_MODE.key,
+            variable=self.mode_var, command=self._change_mode, style="Mode.TRadiobutton",
+        )
+        self.legacy_mode.pack(side="left", padx=(6, 0))
 
     def _build_connection_card(self) -> None:
         connect_card = card(self.root_frame)
@@ -563,6 +568,7 @@ class TamagometerDesktop(tk.Tk):
         self.cancel_button.configure(state="normal" if busy else "disabled")
         self.connection_mode.configure(state="disabled" if busy else "normal")
         self.friends_mode.configure(state="disabled" if busy else "normal")
+        self.legacy_mode.configure(state="disabled" if busy else "normal")
         self.connect_button.configure(state="disabled" if busy else "normal")
         self.port_combo.configure(state="disabled" if busy else "readonly")
         self.category_combo.configure(state="disabled" if busy else "readonly")

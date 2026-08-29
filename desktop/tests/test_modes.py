@@ -1,6 +1,6 @@
 import unittest
 
-from tamagometer_desktop.modes import CONNECTION_MODE, FRIENDS_MODE, get_mode
+from tamagometer_desktop.modes import CONNECTION_MODE, FRIENDS_MODE, LEGACY_MODE, get_mode
 
 
 class ModeDefinitionTests(unittest.TestCase):
@@ -14,6 +14,10 @@ class ModeDefinitionTests(unittest.TestCase):
 
     def test_unknown_mode_falls_back_to_connection(self):
         self.assertIs(get_mode("unknown"), CONNECTION_MODE)
+
+    def test_original_fallback_is_a_single_automatic_action(self):
+        self.assertIs(get_mode("legacy"), LEGACY_MODE)
+        self.assertEqual(LEGACY_MODE.items, ((0, "Automatic game or gift"),))
 
 
 if __name__ == "__main__":

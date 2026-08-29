@@ -80,4 +80,9 @@ class AlignmentGuide(ttk.Frame):
                 offset = index * 13 + (pulse * 8 if active else 0)
                 canvas.create_arc(116 + offset, cy - 20 - index * 2, 158 + offset, cy + 20 + index * 2, start=285, extent=150, style="arc", outline=accent, width=2)
                 canvas.create_arc(width - 158 - offset, cy - 20 - index * 2, width - 116 - offset, cy + 20 + index * 2, start=105, extent=150, style="arc", outline=accent, width=2)
-            self.caption.set("Point the Tamagotchi IR window directly at the Flipper infrared port.")
+            if self.mode == "legacy":
+                self.caption.set(
+                    "Point the original Tamagotchi IR window at the Flipper and keep both devices still."
+                )
+            else:
+                self.caption.set("Point the Tamagotchi IR window directly at the Flipper infrared port.")

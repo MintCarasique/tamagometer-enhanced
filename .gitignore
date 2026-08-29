@@ -6,6 +6,9 @@ pico/__pycache__
 random garbage
 010 stuff
 captures
+/Remote*.ir
+/connection_capture_*.txt
+/diagnostics.txt
 
 flipper/env
 

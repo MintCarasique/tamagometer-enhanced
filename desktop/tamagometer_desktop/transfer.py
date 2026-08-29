@@ -28,8 +28,12 @@ ALLOWED_TRANSITIONS = {
     },
     TransferState.WAITING_FIRST_MESSAGE: {TransferState.SENDING_ACKNOWLEDGEMENT},
     TransferState.SENDING_ACKNOWLEDGEMENT: {TransferState.WAITING_GIFT_REQUEST},
-    TransferState.WAITING_GIFT_REQUEST: {TransferState.SENDING_GIFT},
+    TransferState.WAITING_GIFT_REQUEST: {
+        TransferState.SENDING_GIFT,
+        TransferState.SENDING_RESULT,
+    },
     TransferState.SENDING_GIFT: {TransferState.COMPLETED},
+    TransferState.SENDING_RESULT: {TransferState.COMPLETED},
     TransferState.BROADCASTING: {TransferState.BROADCASTING, TransferState.VERIFYING},
     TransferState.VERIFYING: {TransferState.COMPLETED},
 }
@@ -100,6 +104,8 @@ class TransferController:
         try:
             if mode.key == "friends":
                 self.connection.send_friends_reward(item_id, self.cancel_event, self._transition)
+            elif mode.key == "legacy":
+                self.connection.run_legacy_fallback(self.cancel_event, self._transition)
             else:
                 self.connection.deliver_gift(
                     GIFT_RESPONSE_2,

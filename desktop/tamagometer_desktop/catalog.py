@@ -57,10 +57,14 @@ def parse_item_key(value: str) -> tuple[ModeDefinition, int] | None:
 
 
 def categories_for(mode: ModeDefinition) -> tuple[str, ...]:
+    if mode.key == "legacy":
+        return (ALL_CATEGORY,)
     return FRIENDS_CATEGORIES if mode.key == "friends" else CONNECTION_CATEGORIES
 
 
 def category_for(mode: ModeDefinition, item_id: int) -> str:
+    if mode.key == "legacy":
+        return "Automatic"
     if mode.key == "friends":
         return "Gotchi Points" if item_id >= 0xFB else "Jewelry"
     if item_id <= 35:
