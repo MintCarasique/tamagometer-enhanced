@@ -3,6 +3,7 @@ import QtQuick
 
 QtObject {
     property bool dark: false
+    property bool reducedMotion: false
     readonly property color background: dark ? "#0B1020" : "#F3F5FA"
     readonly property color surface: dark ? "#151B2B" : "#FFFFFF"
     readonly property color surfaceAlt: dark ? "#1D2435" : "#F9FAFB"

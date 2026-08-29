@@ -20,6 +20,9 @@ release must have a completed entry here before the tag is pushed.
   completion states plus a permanent Run setup again action.
 - Added Qt settings, safe auto-connect controls, About information, and a
   privacy-conscious diagnostics drawer with Copy and Export.
+- Added compact, medium, and wide responsive layouts, keyboard navigation,
+  global shortcuts, accessible control metadata, visible focus, and a persisted
+  reduced-motion preference.
 
 ### Fixed
 

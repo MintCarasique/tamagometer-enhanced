@@ -21,6 +21,10 @@ and now supports the three hardware transfer workflows. Use `python app.py --tk`
 to compare against the retained Tkinter implementation during migration.
 The Qt UI also includes repeatable first-run setup, an explained auto-connect
 preference, About information, and a diagnostics drawer with copy/export.
+Its responsive layout supports a 720×620 minimum window, preserves all content
+through scrolling, and exposes keyboard focus and accessible control names.
+Useful shortcuts include `Ctrl+,` for Settings, `Ctrl+D` for Diagnostics,
+`Ctrl+R` for Repeat, and `Escape` to cancel an active transfer.
 
 ## Desktop 2.0 UI
 

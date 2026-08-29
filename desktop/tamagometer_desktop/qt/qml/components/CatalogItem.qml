@@ -13,15 +13,26 @@ Rectangle {
     property bool selected: false
     signal chosen(int index)
     signal favoriteClicked(int index)
+    activeFocusOnTab: true
+    Accessible.role: Accessible.ListItem
+    Accessible.name: card.itemName + ", " + card.itemDisplayId
+    Accessible.description: card.itemCategory + (card.itemFavorite ? ", favorite" : "")
+    Keys.onReturnPressed: card.chosen(card.rowIndex)
+    Keys.onEnterPressed: card.chosen(card.rowIndex)
+    Keys.onSpacePressed: card.chosen(card.rowIndex)
+    Keys.onPressed: event => {
+        if (event.key === Qt.Key_F) { card.favoriteClicked(card.rowIndex); event.accepted = true }
+    }
 
     radius: 12
     color: selected ? AppTheme.Theme.accentSoft : AppTheme.Theme.surfaceAlt
-    border.width: selected ? 2 : 1
-    border.color: selected ? AppTheme.Theme.accent : AppTheme.Theme.border
+    border.width: selected || activeFocus ? 2 : 1
+    border.color: selected || activeFocus ? AppTheme.Theme.accent : AppTheme.Theme.border
 
     MouseArea {
         anchors.fill: parent
         onClicked: card.chosen(card.rowIndex)
+        onPressed: card.forceActiveFocus()
     }
     Image {
         id: sprite
@@ -54,5 +65,6 @@ Rectangle {
         text: card.itemFavorite ? "★" : "☆"
         onClicked: card.favoriteClicked(card.rowIndex)
         Accessible.name: card.itemFavorite ? "Remove from favorites" : "Add to favorites"
+        Accessible.description: "Favorite control for " + card.itemName
     }
 }

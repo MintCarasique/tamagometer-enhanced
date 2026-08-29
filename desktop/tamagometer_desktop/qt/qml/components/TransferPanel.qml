@@ -65,6 +65,7 @@ ConnectionCard {
         wrapMode: Text.WordWrap
     }
     Button {
+        objectName: "primaryTransferAction"
         Layout.fillWidth: true
         text: root.viewModel.primaryActionLabel
         enabled: root.viewModel.canStartTransfer

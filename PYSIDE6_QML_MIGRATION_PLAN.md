@@ -71,6 +71,15 @@ Settings exposes the documented auto-connect policy and About information.
 Diagnostics is a separate privacy-conscious drawer with Copy and Export;
 friendly notices keep raw technical exceptions behind its details action.
 
+Phase 4 is implemented with width-based compact, medium, and wide breakpoints.
+The header reflows at compact widths, the main workflow stacks while remaining
+scrollable, and automated QML tests exercise 720, 900, and 1280 pixel widths
+without losing selection or theme state. Catalog cards support keyboard
+selection and an explicit `F` favorite shortcut; primary controls expose
+accessible names and focus. Global shortcuts cover Settings, Diagnostics,
+Repeat, and cancellation, and a persisted reduced-motion preference is exposed
+for nonessential animation.
+
 ## UX defects the migration must address
 
 The new UI must not reproduce these verified issues from the Tkinter version:

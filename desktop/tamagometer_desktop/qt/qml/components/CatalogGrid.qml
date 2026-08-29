@@ -4,6 +4,7 @@ import QtQuick.Controls
 
 Item {
     id: root
+    objectName: "catalogGrid"
     required property var catalogModel
     implicitHeight: 450
 
@@ -16,6 +17,10 @@ Item {
         cellHeight: 88
         currentIndex: root.catalogModel.selectedIndex
         boundsBehavior: Flickable.StopAtBounds
+        activeFocusOnTab: true
+        keyNavigationEnabled: true
+        Accessible.role: Accessible.List
+        Accessible.name: "Gift and reward catalog"
         ScrollBar.vertical: ScrollBar {}
         delegate: CatalogItem {
             required property int index
@@ -33,7 +38,7 @@ Item {
             itemSprite: spriteUrl
             itemFavorite: favorite
             selected: index === grid.currentIndex
-            onChosen: root.catalogModel.select(index)
+            onChosen: { root.catalogModel.select(index); grid.currentIndex = index }
             onFavoriteClicked: root.catalogModel.toggleFavorite(index)
         }
     }

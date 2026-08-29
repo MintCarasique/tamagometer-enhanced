@@ -14,6 +14,8 @@ Drawer {
     onClosed: if (viewModel.diagnosticsVisible) viewModel.closeDiagnostics()
     background: Rectangle { color: AppTheme.Theme.surface }
     ColumnLayout {
+        Accessible.role: Accessible.Pane
+        Accessible.name: "Diagnostics report"
         anchors.fill: parent; anchors.margins: 18; spacing: 12
         RowLayout {
             Layout.fillWidth: true

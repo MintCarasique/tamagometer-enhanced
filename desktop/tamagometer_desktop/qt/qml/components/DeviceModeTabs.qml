@@ -21,6 +21,7 @@ Flow {
             palette.button: checked ? AppTheme.Theme.accent : AppTheme.Theme.surface
             palette.buttonText: checked ? "white" : AppTheme.Theme.text
             Accessible.name: text
+            Accessible.description: checked ? "Current device mode" : "Switch device mode"
         }
     }
 }

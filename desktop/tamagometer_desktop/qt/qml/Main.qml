@@ -7,6 +7,7 @@ import "theme" as AppTheme
 
 ApplicationWindow {
     id: window
+    objectName: "mainWindow"
     // Context properties are supplied by QQmlApplicationEngine at startup.
     // qmllint disable unqualified
     property var viewModel: appViewModel
@@ -18,8 +19,15 @@ ApplicationWindow {
     visible: true
     title: "Tamagometer Enhanced " + window.viewModel.version
     color: AppTheme.Theme.background
+    readonly property string layoutClass: width < 820 ? "compact" : (width < 1180 ? "medium" : "wide")
+    readonly property bool compactLayout: layoutClass === "compact"
 
     Binding { target: AppTheme.Theme; property: "dark"; value: window.viewModel.darkTheme }
+    Binding { target: AppTheme.Theme; property: "reducedMotion"; value: window.viewModel.reducedMotion }
+    Shortcut { sequence: "Ctrl+,"; onActivated: window.viewModel.openSettings() }
+    Shortcut { sequence: "Ctrl+D"; onActivated: window.viewModel.openDiagnostics() }
+    Shortcut { sequence: "Ctrl+R"; enabled: window.viewModel.canRepeatTransfer; onActivated: window.viewModel.repeatLastTransfer() }
+    Shortcut { sequence: "Escape"; enabled: window.viewModel.canCancelTransfer; onActivated: window.viewModel.cancelTransfer() }
 
     ScrollView {
         anchors.fill: parent
@@ -32,33 +40,38 @@ ApplicationWindow {
 
             Rectangle {
                 Layout.fillWidth: true
-                implicitHeight: 104
+                implicitHeight: window.compactLayout ? 150 : 112
                 color: AppTheme.Theme.accent
-                RowLayout {
+                ColumnLayout {
                     anchors.fill: parent
+                    anchors.topMargin: 14; anchors.bottomMargin: 14
                     anchors.leftMargin: 28; anchors.rightMargin: 28
-                    Label {
+                    RowLayout {
                         Layout.fillWidth: true
-                        text: "Tamagometer Enhanced\n<span style='font-size:12px'>Desktop " + window.viewModel.version + " · PySide6/QML preview</span>"
-                        textFormat: Text.RichText
-                        color: "white"
-                        font.pixelSize: 24
-                        font.weight: Font.DemiBold
+                        Label {
+                            Layout.fillWidth: true
+                            text: "Tamagometer Enhanced\n<span style='font-size:12px'>Desktop " + window.viewModel.version + " · PySide6/QML preview</span>"
+                            textFormat: Text.RichText; color: "white"; font.pixelSize: window.compactLayout ? 20 : 24; font.weight: Font.DemiBold
+                        }
+                        StatusBadge { text: window.viewModel.connectionStatus; Accessible.name: "Connection status: " + text }
                     }
-                    StatusBadge { text: window.viewModel.connectionStatus }
-                    Button { text: "Diagnostics"; onClicked: window.viewModel.openDiagnostics() }
-                    Button { text: "Settings"; onClicked: window.viewModel.openSettings() }
-                    Button {
-                        text: window.viewModel.darkTheme ? "☀ Light" : "☾ Dark"
-                        onClicked: window.viewModel.toggleTheme()
-                        Accessible.name: "Toggle color theme"
+                    Flow {
+                        Layout.fillWidth: true; spacing: 8
+                        Button { text: "Diagnostics"; onClicked: window.viewModel.openDiagnostics(); Accessible.name: "Open diagnostics, Control D" }
+                        Button { text: "Settings"; onClicked: window.viewModel.openSettings(); Accessible.name: "Open settings, Control comma" }
+                        Button {
+                            text: window.viewModel.darkTheme ? "☀ Light" : "☾ Dark"
+                            onClicked: window.viewModel.toggleTheme()
+                            Accessible.name: "Toggle color theme"
+                        }
                     }
                 }
             }
 
             ColumnLayout {
                 Layout.fillWidth: true
-                Layout.leftMargin: 24; Layout.rightMargin: 24
+                Layout.leftMargin: window.compactLayout ? 12 : 24
+                Layout.rightMargin: window.compactLayout ? 12 : 24
                 Layout.topMargin: 18; Layout.bottomMargin: 26
                 spacing: 14
 
@@ -73,6 +86,7 @@ ApplicationWindow {
                     RowLayout {
                         Layout.fillWidth: true
                         ComboBox {
+                            objectName: "portSelector"
                             Layout.fillWidth: true
                             model: window.viewModel.ports
                             textRole: "label"
@@ -87,6 +101,7 @@ ApplicationWindow {
                             text: window.viewModel.connected ? "Disconnect" : (window.viewModel.connectionState === "connecting" ? "Connecting…" : "Connect")
                             enabled: window.viewModel.connectionState !== "connecting" && !window.viewModel.canCancelTransfer
                             onClicked: window.viewModel.toggleConnection()
+                            Accessible.name: text + " Flipper"
                         }
                     }
                 }
@@ -103,7 +118,7 @@ ApplicationWindow {
 
                 GridLayout {
                     Layout.fillWidth: true
-                    columns: window.width >= 980 ? 2 : 1
+                    columns: window.compactLayout ? 1 : 2
                     columnSpacing: 16
                     rowSpacing: 16
 
@@ -128,6 +143,7 @@ ApplicationWindow {
                         RowLayout {
                             Layout.fillWidth: true
                             TextField {
+                                objectName: "catalogSearch"
                                 Layout.fillWidth: true
                                 placeholderText: "Search name, category, decimal or hex ID"
                                 text: window.viewModel.catalogModel.query

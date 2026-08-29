@@ -6,7 +6,7 @@ import unittest
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 os.environ.setdefault("QT_QUICK_BACKEND", "software")
 
-from PySide6.QtCore import QUrl
+from PySide6.QtCore import QObject, QUrl
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
 
@@ -69,14 +69,36 @@ class QtCatalogModelTests(unittest.TestCase):
 
 
 class QmlSmokeTests(unittest.TestCase):
+    def load_window(self, temporary):
+        engine = QQmlApplicationEngine()
+        store = SettingsStore(Path(temporary) / "settings.json")
+        store.save(AppSettings(auto_connect=False, onboarding_skipped=True))
+        view_model = AppViewModel(store, port_provider=lambda: [], start_timer=False)
+        engine.rootContext().setContextProperty("appViewModel", view_model)
+        engine.addImportPath(str(qml_root()))
+        engine.load(QUrl.fromLocalFile(str(qml_root() / "Main.qml")))
+        self.assertEqual(len(engine.rootObjects()), 1)
+        return engine, view_model, engine.rootObjects()[0]
+
     def test_main_qml_loads_headlessly(self):
         with tempfile.TemporaryDirectory() as temporary:
-            engine = QQmlApplicationEngine()
-            view_model = AppViewModel(SettingsStore(Path(temporary) / "settings.json"))
-            engine.rootContext().setContextProperty("appViewModel", view_model)
-            engine.addImportPath(str(qml_root()))
-            engine.load(QUrl.fromLocalFile(str(qml_root() / "Main.qml")))
-            self.assertEqual(len(engine.rootObjects()), 1)
+            engine, _view_model, _window = self.load_window(temporary)
+            engine.clearComponentCache()
+
+    def test_responsive_breakpoints_preserve_selection_and_theme(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            engine, view_model, window = self.load_window(temporary)
+            view_model.catalogModel.select(7)
+            selected = view_model.catalogModel.selectedItemKey
+            for width, expected in ((720, "compact"), (900, "medium"), (1280, "wide")):
+                window.setWidth(width); APP.processEvents()
+                self.assertEqual(window.property("layoutClass"), expected)
+                self.assertEqual(view_model.catalogModel.selectedItemKey, selected)
+            view_model.toggleTheme(); APP.processEvents()
+            self.assertTrue(view_model.darkTheme)
+            self.assertEqual(view_model.catalogModel.selectedItemKey, selected)
+            for object_name in ("portSelector", "catalogSearch", "catalogGrid", "primaryTransferAction"):
+                self.assertIsNotNone(window.findChild(QObject, object_name))
             engine.clearComponentCache()
 
 
@@ -165,7 +187,9 @@ class QtWorkflowTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             view_model = self.make_view_model(temporary)
             view_model.setAutoConnect(True)
+            view_model.setReducedMotion(True)
             self.assertTrue(view_model.autoConnect)
+            self.assertTrue(view_model.reducedMotion)
             destination = Path(temporary) / "diagnostics.txt"
             view_model.exportDiagnostics(destination.as_uri())
             report = destination.read_text(encoding="utf-8")

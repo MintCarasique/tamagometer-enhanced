@@ -98,6 +98,10 @@ class AppViewModel(QObject):
     def autoConnect(self): return self._settings.auto_connect
     @Slot(bool)
     def setAutoConnect(self,value): self._save(auto_connect=bool(value)); self.uiChanged.emit()
+    @Property(bool,notify=uiChanged)
+    def reducedMotion(self): return self._settings.reduced_motion
+    @Slot(bool)
+    def setReducedMotion(self,value): self._save(reduced_motion=bool(value)); self.uiChanged.emit()
 
     @Property(bool,notify=uiChanged)
     def onboardingVisible(self): return self._onboarding_visible

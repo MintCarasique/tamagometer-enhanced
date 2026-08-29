@@ -23,6 +23,8 @@ Popup {
         "Desktop will select only a verified or remembered Flipper port, check compatibility, and remember it for reconnection."
     ]
     contentItem: ColumnLayout {
+        Accessible.role: Accessible.Pane
+        Accessible.name: "First-run setup"
         spacing: 16
         Label { text: "FIRST-RUN SETUP · " + (root.viewModel.onboardingStep + 1) + " OF 3"; color: AppTheme.Theme.accent; font.weight: Font.DemiBold }
         Label { Layout.fillWidth: true; text: root.titles[root.viewModel.onboardingStep]; color: AppTheme.Theme.text; font.pixelSize: 24; font.weight: Font.DemiBold; wrapMode: Text.WordWrap }
