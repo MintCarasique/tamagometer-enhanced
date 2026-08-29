@@ -219,6 +219,11 @@ class SerialFlowTests(unittest.TestCase):
         self.assertEqual(find_flipper_port(ports).device, "COM6")
         self.assertEqual(find_flipper_port(ports, "COM3").device, "COM3")
 
+    def test_unknown_single_port_is_not_silently_selected(self):
+        ports = [SerialPortInfo("COM3", "USB Serial Device")]
+        self.assertIsNone(find_flipper_port(ports))
+        self.assertEqual(find_flipper_port(ports, "COM3").device, "COM3")
+
 
 if __name__ == "__main__":
     unittest.main()

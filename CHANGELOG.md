@@ -4,6 +4,23 @@ This file records user-visible changes in Tamagometer Enhanced. Release notes
 for a `vX.Y.Z` tag are taken from the matching `## [X.Y.Z]` section, so every
 release must have a completed entry here before the tag is pushed.
 
+## [2.1.0] - Unreleased
+
+### Changed
+
+- Began the staged Desktop presentation migration from Tkinter/ttk to PySide6
+  and Qt Quick/QML while retaining the working protocol and transfer layers.
+- Added a responsive Qt shell and catalog model as an architectural preview;
+  the Tk interface remains available as a development fallback during parity
+  work.
+
+### Fixed
+
+- Unknown standalone COM ports are no longer silently selected as a Flipper;
+  automatic selection now requires Flipper identity or a remembered port.
+- Normalized mislabeled catalog images to real PNG files and added signature
+  and decodeability regression tests.
+
 ## [2.0.0] - 2026-08-29
 
 ### Added

@@ -13,6 +13,10 @@ for this fork are hosted in this repository.
 Current stable release: **2.0.0** (2026-08-29). See the complete
 [`CHANGELOG.md`](CHANGELOG.md) for release history.
 
+Desktop **2.1.0** is currently under development on the
+`feature/pyside6-qml` branch. It introduces the new PySide6/Qt Quick interface
+in staged slices while retaining the Tkinter UI as a hardware-tested fallback.
+
 ## Supported devices
 
 | Device | Transport | Available operation | Status |
@@ -152,6 +156,9 @@ Create a standalone Windows build with PyInstaller:
 ```powershell
 pyinstaller --noconfirm --clean --onefile --windowed --name TamagometerDesktop app.py
 ```
+
+During the 2.1 migration, `python app.py` starts the Qt interface and
+`python app.py --tk` starts the retained Tkinter interface.
 
 ### Flipper companion
 

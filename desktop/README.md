@@ -15,6 +15,11 @@ Current stable Desktop version: **2.0.0**. Desktop and Companion builds should
 come from the same GitHub Release; see the parent
 [`CHANGELOG.md`](../CHANGELOG.md) for release history.
 
+The source tree currently identifies as **2.1.0-dev** while the presentation
+layer moves to PySide6 and Qt Quick. The Qt shell is the default source entry
+point; use `python app.py --tk` for the retained hardware-transfer UI until Qt
+feature parity is complete.
+
 ## Desktop 2.0 UI
 
 Version 2.0 adds first-run setup and automatic connection,
@@ -100,6 +105,12 @@ python -m pip install -r requirements.txt
 python app.py
 ```
 
+Run the retained Tkinter interface with:
+
+```powershell
+python app.py --tk
+```
+
 Run the protocol tests with:
 
 ```powershell
@@ -114,6 +125,7 @@ The Flipper source is in the repository's [`flipper/`](../flipper/) submodule an
 `app.py` is intentionally limited to application startup. The desktop package
 is split by responsibility:
 
+- `tamagometer_desktop/qt/` — PySide6 ViewModels and the Qt Quick/QML UI;
 - `tamagometer_desktop/window.py` — Tk window and UI event handling;
 - `tamagometer_desktop/theme.py` — colors and ttk styles;
 - `tamagometer_desktop/modes.py` — supported modes and item catalogs;
@@ -127,6 +139,10 @@ is split by responsibility:
 Protocol encoding and serial transport remain isolated in `tamagometer_core.py`,
 `friends_core.py`, `flipper_serial.py`, and the shared structured states in
 `transfer_status.py`.
+
+Catalog sprites are normalized to real PNG files for deterministic decoding in
+QML. Regenerate/repair them with `python tools/normalize_sprites.py`; the test
+suite validates both their signatures and Pillow decodeability.
 
 ## Protocol sources
 

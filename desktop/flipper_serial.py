@@ -103,7 +103,7 @@ def find_flipper_port(
     ranked = sorted(candidates, key=score, reverse=True)
     if ranked and score(ranked[0]) > 0:
         return ranked[0]
-    return candidates[0] if len(candidates) == 1 else None
+    return None
 
 
 def _version_tuple(version: str) -> tuple[int, int, int]:

@@ -70,7 +70,9 @@ jobs:
         run: >-
           pyinstaller --noconfirm --clean --onefile --windowed
           --name TamagometerDesktop --distpath ../release
-          --add-data "assets;assets" app.py
+          --add-data "assets;assets"
+          --add-data "tamagometer_desktop/qt/qml;tamagometer_desktop/qt/qml"
+          app.py
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v7
