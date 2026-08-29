@@ -16,6 +16,7 @@ class SettingsStoreTests(unittest.TestCase):
                 mode="friends",
                 theme="dark",
                 onboarding_complete=True,
+                onboarding_skipped=False,
                 favorites=("connection:4",),
                 recent=("friends:255", "connection:4"),
                 last_transfer="friends:255",
@@ -46,6 +47,14 @@ class SettingsStoreTests(unittest.TestCase):
             self.assertEqual(settings.favorites, ())
             self.assertEqual(settings.recent, ("connection:4",))
             self.assertFalse(settings.auto_connect)
+
+    def test_skipped_onboarding_is_distinct_from_completion(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "settings.json"
+            path.write_text('{"onboarding_skipped":true}', encoding="utf-8")
+            settings = SettingsStore(path).load()
+            self.assertTrue(settings.onboarding_skipped)
+            self.assertFalse(settings.onboarding_complete)
 
 
 if __name__ == "__main__":

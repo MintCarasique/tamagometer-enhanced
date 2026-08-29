@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import "components"
+import "dialogs"
 import "theme" as AppTheme
 
 ApplicationWindow {
@@ -45,6 +46,8 @@ ApplicationWindow {
                         font.weight: Font.DemiBold
                     }
                     StatusBadge { text: window.viewModel.connectionStatus }
+                    Button { text: "Diagnostics"; onClicked: window.viewModel.openDiagnostics() }
+                    Button { text: "Settings"; onClicked: window.viewModel.openSettings() }
                     Button {
                         text: window.viewModel.darkTheme ? "☀ Light" : "☾ Dark"
                         onClicked: window.viewModel.toggleTheme()
@@ -91,6 +94,11 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     visible: window.viewModel.noticeSummary.length > 0
                     text: window.viewModel.noticeSummary
+                }
+                Button {
+                    visible: window.viewModel.noticeDetail.length > 0
+                    text: "Show technical details"
+                    onClicked: window.viewModel.openDiagnostics()
                 }
 
                 GridLayout {
@@ -175,5 +183,21 @@ ApplicationWindow {
                 }
             }
         }
+    }
+
+    OnboardingDialog {
+        id: onboarding
+        viewModel: window.viewModel
+        visible: window.viewModel.onboardingVisible
+    }
+    SettingsDialog {
+        id: settingsDialog
+        viewModel: window.viewModel
+        visible: window.viewModel.settingsVisible
+    }
+    DiagnosticsDrawer {
+        id: diagnostics
+        viewModel: window.viewModel
+        visible: window.viewModel.diagnosticsVisible
     }
 }

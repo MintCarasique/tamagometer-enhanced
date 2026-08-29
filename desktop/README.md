@@ -15,10 +15,12 @@ Current stable Desktop version: **2.0.0**. Desktop and Companion builds should
 come from the same GitHub Release; see the parent
 [`CHANGELOG.md`](../CHANGELOG.md) for release history.
 
-The source tree currently identifies as **2.1.0-dev** while the presentation
+The source tree currently identifies as **3.0.0-dev** while the presentation
 layer moves to PySide6 and Qt Quick. The Qt UI is the default source entry point
 and now supports the three hardware transfer workflows. Use `python app.py --tk`
 to compare against the retained Tkinter implementation during migration.
+The Qt UI also includes repeatable first-run setup, an explained auto-connect
+preference, About information, and a diagnostics drawer with copy/export.
 
 ## Desktop 2.0 UI
 

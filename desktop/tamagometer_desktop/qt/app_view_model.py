@@ -2,13 +2,16 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from pathlib import Path
 import queue
 import threading
 from PySide6.QtCore import QObject, Property, QTimer, Signal, Slot
+from PySide6.QtGui import QGuiApplication
 from flipper_serial import FlipperConnection, IncompatibleCompanionError, find_flipper_port, list_ports
 from transfer_status import TransferState
 from .. import __version__
 from ..catalog import categories_for, item_key, parse_item_key
+from ..diagnostics import build_diagnostic_report
 from ..modes import MODES, get_mode
 from ..settings import SettingsStore
 from ..transfer import AppEvent, TransferController
@@ -22,6 +25,7 @@ STATE_PROGRESS = {TransferState.PREPARING: .05, TransferState.WAITING_FIRST_MESS
 class AppViewModel(QObject):
     modeChanged=Signal(); themeChanged=Signal(); connectionChanged=Signal()
     transferChanged=Signal(); noticeChanged=Signal(); portsChanged=Signal()
+    uiChanged=Signal(); diagnosticsChanged=Signal()
 
     def __init__(self, settings_store=None, connection=None, port_provider=list_ports,
                  start_timer=True, parent=None):
@@ -31,7 +35,7 @@ class AppViewModel(QObject):
         self._catalog=CatalogModel(self._mode,self._settings.favorites,self._settings.recent,self)
         self._catalog.favoritesChanged.connect(self._save_favorites)
         self._catalog.selectionChanged.connect(self.transferChanged)
-        self._connection=connection or FlipperConnection()
+        self._connection=connection or FlipperConnection(trace=self._append_log)
         self._port_provider=port_provider; self._ports=[]; self._selected_port=""
         self._connection_state="disconnected"; self._connection_status="Flipper disconnected"
         self._events=queue.Queue(); self._connection_results=queue.Queue()
@@ -39,6 +43,10 @@ class AppViewModel(QObject):
         self._transfer_state="idle"; self._transfer_status="Ready"; self._progress=0.0; self._busy=False
         self._pending_key=""; self._notice_summary=""; self._notice_detail=""; self._notice_severity="info"
         self._poll_ticks=0
+        self._log=[]; self._onboarding_step=0; self._onboarding_state="Have a USB data cable and your Flipper ready."
+        self._onboarding_visible=not self._settings.onboarding_complete and not self._settings.onboarding_skipped
+        self._onboarding_ready=False; self._setup_connect_pending=False
+        self._settings_visible=False; self._diagnostics_visible=False
         self._timer=QTimer(self); self._timer.setInterval(80); self._timer.timeout.connect(self.drainEvents)
         if start_timer: self._timer.start()
         self.refreshPorts()
@@ -52,6 +60,9 @@ class AppViewModel(QObject):
     def _save_favorites(self,values): self._save(favorites=tuple(values))
     def _notice(self,severity,summary,detail=""):
         self._notice_severity=severity; self._notice_summary=summary; self._notice_detail=detail; self.noticeChanged.emit()
+        self._append_log(f"{severity.upper()}: {summary}" + (f" ({detail})" if detail else ""))
+    def _append_log(self,text):
+        self._log.append(str(text)); self._log=self._log[-300:]; self.diagnosticsChanged.emit()
 
     @Property(str,constant=True)
     def version(self): return __version__
@@ -83,6 +94,69 @@ class AppViewModel(QObject):
     def darkTheme(self): return self._settings.theme=="dark"
     @Slot()
     def toggleTheme(self): self._save(theme="light" if self.darkTheme else "dark"); self.themeChanged.emit()
+    @Property(bool,notify=uiChanged)
+    def autoConnect(self): return self._settings.auto_connect
+    @Slot(bool)
+    def setAutoConnect(self,value): self._save(auto_connect=bool(value)); self.uiChanged.emit()
+
+    @Property(bool,notify=uiChanged)
+    def onboardingVisible(self): return self._onboarding_visible
+    @Property(int,notify=uiChanged)
+    def onboardingStep(self): return self._onboarding_step
+    @Property(str,notify=uiChanged)
+    def onboardingState(self): return self._onboarding_state
+    @Property(bool,notify=uiChanged)
+    def onboardingReady(self): return self._onboarding_ready
+    @Slot()
+    def runSetupAgain(self):
+        self._onboarding_step=0; self._onboarding_ready=False; self._onboarding_state="Have a USB data cable and your Flipper ready."
+        self._onboarding_visible=True; self._settings_visible=False; self.uiChanged.emit()
+    @Slot()
+    def closeOnboarding(self): self._onboarding_visible=False; self.uiChanged.emit()
+    @Slot()
+    def skipOnboarding(self):
+        self._save(onboarding_complete=False,onboarding_skipped=True); self._onboarding_visible=False; self.uiChanged.emit()
+    @Slot()
+    def onboardingBack(self):
+        if self._onboarding_step>0: self._onboarding_step-=1; self.uiChanged.emit()
+    @Slot()
+    def onboardingNext(self):
+        if self._onboarding_ready:
+            self._save(onboarding_complete=True,onboarding_skipped=False); self._onboarding_visible=False; self.uiChanged.emit(); return
+        if self._onboarding_step<2:
+            self._onboarding_step+=1; self.uiChanged.emit(); return
+        if self.connected:
+            self._onboarding_ready=True; self._onboarding_state="Connected successfully. Setup is ready to complete."; self.uiChanged.emit(); return
+        self.refreshPorts()
+        if not self._selected_port:
+            self._onboarding_state="No verified Flipper found. Check USB, close qFlipper, open the Enhanced app, then retry."; self.uiChanged.emit(); return
+        self._setup_connect_pending=True; self._onboarding_state="Checking Companion compatibility…"; self.uiChanged.emit(); self._begin_connect(self._selected_port)
+
+    @Property(bool,notify=uiChanged)
+    def settingsVisible(self): return self._settings_visible
+    @Slot()
+    def openSettings(self): self._settings_visible=True; self.uiChanged.emit()
+    @Slot()
+    def closeSettings(self): self._settings_visible=False; self.uiChanged.emit()
+    @Property(bool,notify=uiChanged)
+    def diagnosticsVisible(self): return self._diagnostics_visible
+    @Slot()
+    def openDiagnostics(self): self._diagnostics_visible=True; self.uiChanged.emit()
+    @Slot()
+    def closeDiagnostics(self): self._diagnostics_visible=False; self.uiChanged.emit()
+    @Property(str,notify=diagnosticsChanged)
+    def diagnosticsText(self):
+        return build_diagnostic_report(self._settings,self._connection,self._ports,"\n".join(self._log))
+    @Slot()
+    def copyDiagnostics(self):
+        QGuiApplication.clipboard().setText(self.diagnosticsText); self._notice("success","Diagnostics copied to the clipboard.")
+    @Slot(str)
+    def exportDiagnostics(self,url):
+        path=url
+        if path.startswith("file:///"): path=path[8:]
+        try: Path(path).write_text(self.diagnosticsText,encoding="utf-8")
+        except OSError as error: self._notice("error","Could not export diagnostics.",str(error))
+        else: self._notice("success","Diagnostic report exported.")
 
     @Property("QVariantList",notify=portsChanged)
     def ports(self): return [{"device":p.device,"label":p.display_name} for p in self._ports]
@@ -186,15 +260,19 @@ class AppViewModel(QObject):
                 if ok:
                     self._connection_state="connected"; self._connection_status=f"Connected · {port} · Companion {payload.version}"
                     self._save(port=port); self._notice("success","Flipper connected and ready.")
+                    if self._setup_connect_pending:
+                        self._onboarding_ready=True; self._onboarding_state="Connected successfully. Setup is ready to complete."; self._setup_connect_pending=False; self.uiChanged.emit()
                 else:
                     self._connection_state="error"; self._connection_status="Flipper connection failed"
                     summary="The open Flipper app is incompatible." if isinstance(payload,IncompatibleCompanionError) else "Could not connect to Flipper."
                     self._notice("error",summary,str(payload))
+                    if self._setup_connect_pending:
+                        self._onboarding_state="Connection failed. Check the cable and Companion, then retry."; self._setup_connect_pending=False; self.uiChanged.emit()
                 self.connectionChanged.emit(); self.transferChanged.emit()
         except queue.Empty: pass
         try:
             while True:
-                event:AppEvent=self._events.get_nowait(); self._transfer_status=event.text
+                event:AppEvent=self._events.get_nowait(); self._transfer_status=event.text; self._append_log(event.text)
                 if event.state:
                     self._transfer_state=event.state.value
                     self._progress=event.current/event.total if event.current is not None and event.total else STATE_PROGRESS.get(event.state,self._progress)

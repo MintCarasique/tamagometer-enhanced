@@ -18,6 +18,7 @@ class AppSettings:
     theme: str = "light"
     auto_connect: bool = True
     onboarding_complete: bool = False
+    onboarding_skipped: bool = False
     favorites: tuple[str, ...] = ()
     recent: tuple[str, ...] = ()
     last_transfer: str = ""
@@ -54,6 +55,7 @@ class SettingsStore:
             theme=theme if theme in {"light", "dark"} else "light",
             auto_connect=data.get("auto_connect", True) is not False,
             onboarding_complete=data.get("onboarding_complete", False) is True,
+            onboarding_skipped=data.get("onboarding_skipped", False) is True,
             favorites=tuple(value for value in favorites if isinstance(value, str))
             if isinstance(favorites, list) else (),
             recent=tuple(value for value in recent if isinstance(value, str))[:12]

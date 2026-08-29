@@ -84,6 +84,7 @@ class QtWorkflowTests(unittest.TestCase):
     class FakeConnection:
         connected = True
         port = "COM6"
+        companion = CompanionInfo("2.0.0", 1, frozenset())
 
         def open(self, port):
             self.port = port
@@ -138,6 +139,38 @@ class QtWorkflowTests(unittest.TestCase):
             self.assertEqual(view_model.connectionState, "disconnected")
             self.assertEqual(view_model.noticeSummary, "The transfer could not be completed.")
             self.assertEqual(view_model.noticeDetail, "USB cable removed")
+
+    def test_onboarding_close_skip_and_success_are_distinct(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            store = SettingsStore(Path(temporary) / "settings.json")
+            store.save(AppSettings(auto_connect=False))
+            view_model = AppViewModel(store, self.FakeConnection(), lambda: [], start_timer=False)
+            self.assertTrue(view_model.onboardingVisible)
+            view_model.closeOnboarding()
+            self.assertFalse(store.load().onboarding_complete)
+            self.assertFalse(store.load().onboarding_skipped)
+            view_model.runSetupAgain(); view_model.skipOnboarding()
+            self.assertTrue(store.load().onboarding_skipped)
+            view_model.runSetupAgain()
+            view_model._connection_results.put((True, "COM6", CompanionInfo("2.0.0", 1, frozenset())))
+            view_model.drainEvents()
+            view_model.onboardingNext(); view_model.onboardingNext(); view_model.onboardingNext()
+            self.assertTrue(view_model.onboardingReady)
+            self.assertFalse(store.load().onboarding_complete)
+            view_model.onboardingNext()
+            self.assertTrue(store.load().onboarding_complete)
+            self.assertFalse(store.load().onboarding_skipped)
+
+    def test_settings_and_diagnostic_export(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            view_model = self.make_view_model(temporary)
+            view_model.setAutoConnect(True)
+            self.assertTrue(view_model.autoConnect)
+            destination = Path(temporary) / "diagnostics.txt"
+            view_model.exportDiagnostics(destination.as_uri())
+            report = destination.read_text(encoding="utf-8")
+            self.assertIn("Desktop version: 3.0.0-dev", report)
+            self.assertIn("Diagnostics log:", report)
 
 
 if __name__ == "__main__":

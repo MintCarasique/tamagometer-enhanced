@@ -1,6 +1,6 @@
 """Entry point for Tamagometer Desktop.
 
-Qt Quick is the default UI during the 2.1 migration. Use ``--tk`` or set
+Qt Quick is the default UI during the 3.0 migration. Use ``--tk`` or set
 ``TAMAGOMETER_UI=tk`` to run the retained Tkinter implementation.
 """
 

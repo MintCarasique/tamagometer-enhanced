@@ -40,7 +40,7 @@ The reusable application and protocol layer consists mainly of:
 There are currently 38 passing unit tests under `desktop/tests/`. Preserve these
 tests and add Qt-facing tests rather than replacing the existing protocol tests.
 
-## Implementation status — 2.1.0
+## Implementation status — 3.0.0
 
 Work is active on `feature/pyside6-qml`. The first architectural slice now
 contains the Phase 0 guardrails and initial Phase 1 shell:
@@ -61,8 +61,15 @@ GUI thread, `QTimer` drains connection and transfer queues on the GUI thread,
 and Connection 2024, Friends, and original V2/V3 expose start, progress,
 cancellation, completion, repeat, and disconnect/error states. These paths have
 automated simulated coverage and still require the planned physical hardware
-smoke test. The migration remains `2.1.0-dev` until that validation and the
-remaining onboarding/diagnostics/accessibility work are complete.
+smoke test. The migration remains `3.0.0-dev` until that validation and the
+remaining responsive-design, accessibility, and release packaging work are complete.
+
+Phase 3 is implemented: onboarding persists distinct skipped and completed
+states, closing it does not record either outcome, setup can be reopened from
+Settings, and successful completion requires a verified Companion connection.
+Settings exposes the documented auto-connect policy and About information.
+Diagnostics is a separate privacy-conscious drawer with Copy and Export;
+friendly notices keep raw technical exceptions behind its details action.
 
 ## UX defects the migration must address
 

@@ -4,7 +4,7 @@ This file records user-visible changes in Tamagometer Enhanced. Release notes
 for a `vX.Y.Z` tag are taken from the matching `## [X.Y.Z]` section, so every
 release must have a completed entry here before the tag is pushed.
 
-## [2.1.0] - Unreleased
+## [3.0.0] - Unreleased
 
 ### Changed
 
@@ -16,6 +16,10 @@ release must have a completed entry here before the tag is pushed.
 - Connected the Qt interface to the existing asynchronous Companion handshake
   and transfer controller for Connection 2024, Friends, and original V2/V3,
   including progress, cancellation, repeat-last transfer, and friendly errors.
+- Rebuilt first-run setup with explicit close, skip, retry, and successful
+  completion states plus a permanent Run setup again action.
+- Added Qt settings, safe auto-connect controls, About information, and a
+  privacy-conscious diagnostics drawer with Copy and Export.
 
 ### Fixed
 
