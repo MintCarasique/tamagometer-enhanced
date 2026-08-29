@@ -11,9 +11,13 @@ Flipper Zero. The interface supports three distinct protocols:
 
 The app is unofficial and is not affiliated with Bandai.
 
+Current stable Desktop version: **2.0.0**. Desktop and Companion builds should
+come from the same GitHub Release; see the parent
+[`CHANGELOG.md`](../CHANGELOG.md) for release history.
+
 ## Desktop 2.0 UI
 
-The current development version adds first-run setup and automatic connection,
+Version 2.0 adds first-run setup and automatic connection,
 an animated IR/LF placement guide, light and dark themes, inline notifications,
 real transfer progress, categories, favorites, recently sent items, **Repeat
 last transfer**, single-file diagnostic export, and original V2/V3 fallback.

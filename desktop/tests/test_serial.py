@@ -19,7 +19,7 @@ from transfer_status import TransferState
 
 INCOMING = "00001110" + "00000110" + "0" * 144
 INFO = (
-    b"[TAMAGOMETER]version=2.0.0-dev;protocol=1;"
+    b"[TAMAGOMETER]version=2.0.0;protocol=1;"
     b"capabilities=connection_ir,connection_legacy,friends_lf,friends_progress[END]"
 )
 
@@ -87,7 +87,7 @@ class SerialFlowTests(unittest.TestCase):
 
         info = connection.get_info(timeout=0.2)
 
-        self.assertEqual(info.version, "2.0.0-dev")
+        self.assertEqual(info.version, "2.0.0")
         self.assertEqual(info.protocol, 1)
         self.assertIn("friends_progress", info.capabilities)
 

@@ -10,6 +10,9 @@ MIT-licensed Tamagometer research project. Upstream links are retained in the
 Credits section for attribution; downloads, support, and current development
 for this fork are hosted in this repository.
 
+Current stable release: **2.0.0** (2026-08-29). See the complete
+[`CHANGELOG.md`](CHANGELOG.md) for release history.
+
 ## Supported devices
 
 | Device | Transport | Available operation | Status |
@@ -22,42 +25,30 @@ for this fork are hosted in this repository.
 Tamagotchi Friends support currently covers the receiver side of **BFF BUMP**.
 Exchange, Visit Bump, Mail, and Special modes are not implemented.
 
-## Version 1.1 reliability improvements
+## Version 2.0
 
-Desktop 1.1 and Companion 1.1 use a versioned capability handshake before any
-transfer begins. The desktop automatically identifies a likely Flipper COM
-port, reconnects after a USB interruption, reports each transfer stage, and
-shows all 10 Friends broadcast repetitions. An older or incomplete Companion
-is rejected immediately with an update instruction.
+Version 2.0 makes the Flipper application fully hybrid: Connection 2024 gifts,
+Friends rewards, and the original V2/V3 fallback can be started directly on the
+Flipper, while the versioned Desktop CLI remains available. The standalone UI
+includes categorized catalogs, favorites, recent items, repeat-last transfer,
+item artwork, placement guidance, progress, cancellation, vibration feedback,
+and diagnostic export.
 
-Desktop 1.1 requires Tamagometer Enhanced Companion 1.1.0 or newer. Install
-the `.exe` and `.fap` from the same release.
+The Desktop application provides guided first-run setup, automatic Flipper
+discovery and reconnection, animated IR/LF placement instructions, real
+progress, categories, favorites, recent history, Connection item sprites,
+light/dark themes, inline notifications, repeat-last transfer, and one-file
+diagnostic export.
 
-## Desktop 1.2 UI improvements
+The Flipper application also includes a passive Connection Sniffer for
+recording original V1/V2/V3 infrared sessions as decoded bytes and raw timings.
+The V2 `Version 1` / V3 `Others` fallback is hardware-verified but remains an
+experimental protocol: the physical Tamagotchi randomly chooses a game or
+gift, and games currently use the captured responder-win result.
 
-The current development version adds guided first-run setup, automatic Flipper
-connection, animated IR/LF placement instructions, real progress, favorites,
-recent history, gift categories, Connection item sprites, light/dark themes,
-inline notifications, repeat-last-transfer, and one-file diagnostic export.
-It also exposes the original V2/V3 compatibility fallback through the same
-guided Desktop interface and reports its live protocol stages.
-
-Friends jewelry names remain numbered until a complete ID-to-name mapping can
-be verified; the application does not label outcomes from an incomplete list.
-
-## Standalone Flipper development
-
-The `feature/standalone-flipper-app` branch develops Tamagometer Enhanced 2.0
-as a hybrid application: gifts can be selected and sent entirely on Flipper,
-while the existing Desktop CLI remains available. Connection items are grouped
-into categories so the 181-item catalog never needs to be browsed as one list.
-The development FAP also includes a passive Connection Sniffer for recording
-original V1/V2/V3 infrared sessions as decoded bytes and raw timings.
-It can also act as the other side of the observed V2 `Version 1` / V3 `Others`
-compatibility exchange. This fallback is experimental: the physical Tamagotchi
-chooses a random game or gift, and the first implementation uses only the
-captured responder-win game result. Both the standalone and Desktop-driven
-flows have been verified with an original Connection V2 and V3.
+Desktop 2.0 requires Tamagometer Enhanced Companion 2.0.0 or newer. Install
+the `.exe` and `.fap` from the same release. Friends jewelry names remain
+numbered until a complete ID-to-name mapping can be verified.
 
 ## Downloads
 
@@ -180,11 +171,14 @@ GitHub Actions runs the desktop tests and builds both binaries for pushes and
 pull requests. Successful builds are available as temporary workflow artifacts.
 
 Tags matching `v*` additionally create a GitHub Release containing the Windows
-executable, Flipper application, generated release notes, and checksums:
+executable, Flipper application, checksums, and readable notes taken from the
+matching version section in [`CHANGELOG.md`](CHANGELOG.md). Add that section
+before pushing a release tag:
 
 ```powershell
-git tag v2.0.0
-git push origin v2.0.0
+$version = "2.0.1"
+git tag -a "v$version" -m "Tamagometer Enhanced $version"
+git push origin "v$version"
 ```
 
 ## Repository layout

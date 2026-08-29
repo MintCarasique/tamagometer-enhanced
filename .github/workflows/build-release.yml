@@ -121,6 +121,9 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
       - name: Download Windows artifact
         uses: actions/download-artifact@v8
         with:
@@ -137,6 +140,20 @@ jobs:
         working-directory: release
         run: sha256sum TamagometerDesktop.exe tamagometer_enhanced.fap > SHA256SUMS.txt
 
+      - name: Extract readable release notes
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v version="$version" '
+            index($0, "## [" version "]") == 1 { found = 1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > release/RELEASE_NOTES.md
+          if [[ ! -s release/RELEASE_NOTES.md ]]; then
+            echo "CHANGELOG.md has no release section for $version" >&2
+            exit 1
+          fi
+
       - name: Create release and upload binaries
         uses: softprops/action-gh-release@v3
         with:
@@ -145,4 +162,5 @@ jobs:
             release/tamagometer_enhanced.fap
             release/SHA256SUMS.txt
           fail_on_unmatched_files: true
-          generate_release_notes: true
+          body_path: release/RELEASE_NOTES.md
+          generate_release_notes: false

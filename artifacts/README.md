@@ -5,7 +5,7 @@ repository. Download the latest builds from
 [GitHub Releases](https://github.com/MintCarasique/tamagometer-enhanced/releases/latest):
 
 - `TamagometerDesktop.exe` — Windows desktop application;
-- `TamagometerEnhanced.fap` — enhanced Flipper Zero companion;
+- `tamagometer_enhanced.fap` — enhanced Flipper Zero companion;
 - `SHA256SUMS.txt` — integrity checksums for both binaries.
 
 Builds from untagged commits and pull requests are available temporarily from

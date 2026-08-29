@@ -14,6 +14,7 @@ protocol data, captures, or third-party code.
    data, or copyrighted ROM contents.
 5. Describe any hardware used for validation, including the Tamagotchi model
    and Flipper firmware version.
+6. Add user-visible changes to the next version section in `CHANGELOG.md`.
 
 ## Desktop application
 
@@ -42,6 +43,20 @@ ufbt
 
 Desktop and Companion CLI changes must remain versioned through `tamagometer
 info`. Update both sides together when adding a capability.
+
+## Releases
+
+Release tags use the form `vX.Y.Z`. Before pushing a tag:
+
+1. Set the Desktop and Companion versions to the stable `X.Y.Z` value.
+2. Add a `## [X.Y.Z] - YYYY-MM-DD` section to `CHANGELOG.md` with concise,
+   user-facing `Added`, `Changed`, `Fixed`, and `Compatibility` entries as
+   applicable.
+3. Update the Flipper submodule's `CHANGELOG.md` when the Companion changed.
+4. Run the Desktop tests and build the FAP.
+
+The release workflow extracts the matching root changelog section verbatim.
+It intentionally does not publish an automatically generated list of commits.
 
 ## Legacy web and Pico code
 
