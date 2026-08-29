@@ -23,6 +23,7 @@ def run(argv: list[str] | None = None) -> int:
     app.setOrganizationName("Tamagometer Enhanced")
     engine = QQmlApplicationEngine()
     view_model = AppViewModel()
+    app.aboutToQuit.connect(view_model.shutdown)
     engine.rootContext().setContextProperty("appViewModel", view_model)
     engine.addImportPath(str(qml_root()))
     engine.load(QUrl.fromLocalFile(str(qml_root() / "Main.qml")))

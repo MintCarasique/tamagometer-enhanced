@@ -44,7 +44,7 @@ ApplicationWindow {
                         font.pixelSize: 24
                         font.weight: Font.DemiBold
                     }
-                    StatusBadge { text: "Disconnected" }
+                    StatusBadge { text: window.viewModel.connectionStatus }
                     Button {
                         text: window.viewModel.darkTheme ? "☀ Light" : "☾ Dark"
                         onClicked: window.viewModel.toggleTheme()
@@ -65,9 +65,32 @@ ApplicationWindow {
                     currentMode: window.viewModel.modeKey
                     onModeSelected: key => window.viewModel.setMode(key)
                 }
+                ConnectionCard {
+                    Layout.fillWidth: true
+                    RowLayout {
+                        Layout.fillWidth: true
+                        ComboBox {
+                            Layout.fillWidth: true
+                            model: window.viewModel.ports
+                            textRole: "label"
+                            valueRole: "device"
+                            currentIndex: window.viewModel.selectedPortIndex
+                            enabled: window.viewModel.connectionState !== "connecting" && !window.viewModel.canCancelTransfer
+                            onActivated: window.viewModel.setSelectedPort(currentValue)
+                            Accessible.name: "Flipper serial port"
+                        }
+                        Button { text: "Refresh"; onClicked: window.viewModel.refreshPorts() }
+                        Button {
+                            text: window.viewModel.connected ? "Disconnect" : (window.viewModel.connectionState === "connecting" ? "Connecting…" : "Connect")
+                            enabled: window.viewModel.connectionState !== "connecting" && !window.viewModel.canCancelTransfer
+                            onClicked: window.viewModel.toggleConnection()
+                        }
+                    }
+                }
                 InlineNotice {
                     Layout.fillWidth: true
-                    text: "Qt migration preview: catalog browsing is active. Use app.py --tk for hardware transfers until the Qt workflow reaches parity."
+                    visible: window.viewModel.noticeSummary.length > 0
+                    text: window.viewModel.noticeSummary
                 }
 
                 GridLayout {

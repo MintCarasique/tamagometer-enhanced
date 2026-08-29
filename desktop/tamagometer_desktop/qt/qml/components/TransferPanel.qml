@@ -56,13 +56,35 @@ ConnectionCard {
     }
     ProgressBar {
         Layout.fillWidth: true
-        value: 0
+        value: root.viewModel.transferProgress
+    }
+    Label {
+        Layout.fillWidth: true
+        text: root.viewModel.transferStatus
+        color: AppTheme.Theme.accent
+        wrapMode: Text.WordWrap
     }
     Button {
         Layout.fillWidth: true
         text: root.viewModel.primaryActionLabel
-        enabled: false
+        enabled: root.viewModel.canStartTransfer
+        onClicked: root.viewModel.startTransfer()
         Accessible.description: root.viewModel.primaryActionHint
+    }
+    RowLayout {
+        Layout.fillWidth: true
+        Button {
+            Layout.fillWidth: true
+            text: "Repeat"
+            enabled: root.viewModel.canRepeatTransfer
+            onClicked: root.viewModel.repeatLastTransfer()
+        }
+        Button {
+            Layout.fillWidth: true
+            text: "Cancel"
+            enabled: root.viewModel.canCancelTransfer
+            onClicked: root.viewModel.cancelTransfer()
+        }
     }
     Label {
         Layout.fillWidth: true

@@ -16,9 +16,9 @@ come from the same GitHub Release; see the parent
 [`CHANGELOG.md`](../CHANGELOG.md) for release history.
 
 The source tree currently identifies as **2.1.0-dev** while the presentation
-layer moves to PySide6 and Qt Quick. The Qt shell is the default source entry
-point; use `python app.py --tk` for the retained hardware-transfer UI until Qt
-feature parity is complete.
+layer moves to PySide6 and Qt Quick. The Qt UI is the default source entry point
+and now supports the three hardware transfer workflows. Use `python app.py --tk`
+to compare against the retained Tkinter implementation during migration.
 
 ## Desktop 2.0 UI
 

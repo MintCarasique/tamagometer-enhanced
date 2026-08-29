@@ -56,9 +56,13 @@ contains the Phase 0 guardrails and initial Phase 1 shell:
 - Original V2/V3 renders a purpose-built single-action explanation instead of
   a fake catalog.
 
-Live Qt connection and transfer controls remain intentionally out of this first
-slice and are the next Phase 2 work. The migration is versioned as
-`2.1.0-dev` until hardware parity and packaging validation are complete.
+Phase 2 is now implemented in the Qt UI: Companion connection runs outside the
+GUI thread, `QTimer` drains connection and transfer queues on the GUI thread,
+and Connection 2024, Friends, and original V2/V3 expose start, progress,
+cancellation, completion, repeat, and disconnect/error states. These paths have
+automated simulated coverage and still require the planned physical hardware
+smoke test. The migration remains `2.1.0-dev` until that validation and the
+remaining onboarding/diagnostics/accessibility work are complete.
 
 ## UX defects the migration must address
 

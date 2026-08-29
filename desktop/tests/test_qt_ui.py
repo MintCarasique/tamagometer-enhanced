@@ -15,7 +15,10 @@ from tamagometer_desktop.modes import CONNECTION_MODE, LEGACY_MODE
 from tamagometer_desktop.qt.app_view_model import AppViewModel
 from tamagometer_desktop.qt.application import qml_root
 from tamagometer_desktop.qt.catalog_model import CatalogModel
-from tamagometer_desktop.settings import SettingsStore
+from tamagometer_desktop.settings import AppSettings, SettingsStore
+from tamagometer_desktop.transfer import AppEvent
+from flipper_serial import CompanionInfo
+from transfer_status import TransferState, TransferUpdate
 
 
 APP = QGuiApplication.instance() or QGuiApplication(["tamagometer-tests"])
@@ -75,6 +78,66 @@ class QmlSmokeTests(unittest.TestCase):
             engine.load(QUrl.fromLocalFile(str(qml_root() / "Main.qml")))
             self.assertEqual(len(engine.rootObjects()), 1)
             engine.clearComponentCache()
+
+
+class QtWorkflowTests(unittest.TestCase):
+    class FakeConnection:
+        connected = True
+        port = "COM6"
+
+        def open(self, port):
+            self.port = port
+            return CompanionInfo("2.0.0", 1, frozenset())
+
+        def close(self):
+            self.connected = False
+
+        def deliver_gift(self, _response, _gift, _cancel, status):
+            for state in (TransferState.WAITING_FIRST_MESSAGE, TransferState.SENDING_ACKNOWLEDGEMENT,
+                          TransferState.WAITING_GIFT_REQUEST, TransferState.SENDING_GIFT):
+                status(TransferUpdate(state, state.value))
+
+        def send_friends_reward(self, _item, _cancel, status):
+            status(TransferUpdate(TransferState.BROADCASTING, "Broadcasting", 0, 10))
+            status(TransferUpdate(TransferState.BROADCASTING, "Broadcasting", 10, 10))
+            status(TransferUpdate(TransferState.VERIFYING, "Verifying"))
+
+        def run_legacy_fallback(self, _cancel, status):
+            for state in (TransferState.WAITING_FIRST_MESSAGE, TransferState.SENDING_ACKNOWLEDGEMENT,
+                          TransferState.WAITING_GIFT_REQUEST, TransferState.SENDING_RESULT):
+                status(TransferUpdate(state, state.value))
+
+    def make_view_model(self, directory):
+        store = SettingsStore(Path(directory) / "settings.json")
+        store.save(AppSettings(auto_connect=False))
+        view_model = AppViewModel(store, self.FakeConnection(), lambda: [], start_timer=False)
+        view_model._connection_results.put((True, "COM6", CompanionInfo("2.0.0", 1, frozenset())))
+        view_model.drainEvents()
+        return view_model
+
+    def test_all_three_workflows_complete_and_enable_repeat(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            view_model = self.make_view_model(temporary)
+            for mode in ("connection", "friends", "legacy"):
+                view_model.setMode(mode)
+                self.assertTrue(view_model.canStartTransfer)
+                view_model.startTransfer()
+                view_model._transfer.worker.join(1)
+                view_model.drainEvents()
+                self.assertEqual(view_model.transferState, "completed")
+                self.assertEqual(view_model.transferProgress, 1.0)
+                self.assertTrue(view_model.canRepeatTransfer)
+
+    def test_disconnect_event_exposes_friendly_summary_and_detail(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            view_model = self.make_view_model(temporary)
+            view_model._events.put(AppEvent(
+                "disconnected", "USB cable removed", TransferState.DISCONNECTED,
+            ))
+            view_model.drainEvents()
+            self.assertEqual(view_model.connectionState, "disconnected")
+            self.assertEqual(view_model.noticeSummary, "The transfer could not be completed.")
+            self.assertEqual(view_model.noticeDetail, "USB cable removed")
 
 
 if __name__ == "__main__":

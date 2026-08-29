@@ -185,6 +185,22 @@ class CatalogModel(QAbstractListModel):
     def selectedName(self):
         return self._selected_value("name")
 
+    @Property(int, notify=selectionChanged)
+    def selectedItemId(self):
+        return int(self._selected_value("itemId", -1))
+
+    @Property(str, notify=selectionChanged)
+    def selectedItemKey(self):
+        return self._selected_value("itemKey")
+
+    @Property(int, notify=selectionChanged)
+    def selectedItemId(self):
+        return int(self._selected_value("itemId", -1))
+
+    @Property(str, notify=selectionChanged)
+    def selectedItemKey(self):
+        return self._selected_value("itemKey")
+
     @Property(str, notify=selectionChanged)
     def selectedDisplayId(self):
         return self._selected_value("displayId")
@@ -206,6 +222,13 @@ class CatalogModel(QAbstractListModel):
             self._selected_key = key
             self.selectionChanged.emit()
 
+    def select_key(self, key: str) -> bool:
+        index = next((i for i, row in enumerate(self._rows) if row["itemKey"] == key), -1)
+        if index < 0:
+            return False
+        self.select(index)
+        return True
+
     @Slot(int)
     def toggleFavorite(self, index: int):
         if not 0 <= index < len(self._rows):
@@ -220,4 +243,3 @@ class CatalogModel(QAbstractListModel):
         self._selected_key = key
         self.favoritesChanged.emit(self._favorites)
         self._rebuild()
-

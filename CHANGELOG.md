@@ -13,6 +13,9 @@ release must have a completed entry here before the tag is pushed.
 - Added a responsive Qt shell and catalog model as an architectural preview;
   the Tk interface remains available as a development fallback during parity
   work.
+- Connected the Qt interface to the existing asynchronous Companion handshake
+  and transfer controller for Connection 2024, Friends, and original V2/V3,
+  including progress, cancellation, repeat-last transfer, and friendly errors.
 
 ### Fixed
 
