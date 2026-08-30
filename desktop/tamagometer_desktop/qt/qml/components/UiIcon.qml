@@ -60,14 +60,17 @@ Item {
                 ctx.bezierCurveTo(5.9, 17.8, 4.2, 12.1, 6.5, 7.7)
                 ctx.bezierCurveTo(8.3, 4.4, 12.2, 2.9, 15.8, 4.8); ctx.stroke()
             } else if (root.name === "settings") {
-                ctx.beginPath(); ctx.arc(12, 12, 3.2, 0, Math.PI * 2); ctx.stroke()
-                for (let i = 0; i < 8; ++i) {
-                    const angle = i * Math.PI / 4
-                    ctx.beginPath()
-                    ctx.moveTo(12 + Math.cos(angle) * 6, 12 + Math.sin(angle) * 6)
-                    ctx.lineTo(12 + Math.cos(angle) * 9, 12 + Math.sin(angle) * 9)
-                    ctx.stroke()
+                ctx.beginPath()
+                for (let i = 0; i < 32; ++i) {
+                    const angle = -Math.PI / 2 + i * Math.PI / 16
+                    const toothPhase = i % 4
+                    const radius = toothPhase === 0 || toothPhase === 1 ? 9 : 7
+                    const x = 12 + Math.cos(angle) * radius
+                    const y = 12 + Math.sin(angle) * radius
+                    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y)
                 }
+                ctx.closePath(); ctx.stroke()
+                ctx.beginPath(); ctx.arc(12, 12, 3.1, 0, Math.PI * 2); ctx.stroke()
             } else if (root.name === "diagnostics") {
                 ctx.strokeRect(4.5, 3.5, 15, 17)
                 ctx.beginPath(); ctx.moveTo(7, 14); ctx.lineTo(9.5, 11); ctx.lineTo(12, 15); ctx.lineTo(15, 8); ctx.lineTo(17, 10); ctx.stroke()

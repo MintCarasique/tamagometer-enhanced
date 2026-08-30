@@ -89,8 +89,11 @@ class QmlSmokeTests(unittest.TestCase):
             self.assertEqual(window.height(), 940)
             scroll = window.findChild(QObject, "mainScrollView")
             catalog = window.findChild(QObject, "catalogGrid")
+            catalog_card = window.findChild(QObject, "catalogCard")
+            transfer_panel = window.findChild(QObject, "transferPanel")
             self.assertIsNotNone(scroll)
             self.assertEqual(catalog.property("scrollbarGutter"), 18)
+            self.assertAlmostEqual(catalog_card.height(), transfer_panel.height(), delta=1)
             self.assertLessEqual(
                 float(scroll.property("contentHeight")),
                 float(scroll.property("availableHeight")) + 1,
@@ -120,12 +123,31 @@ class QmlSmokeTests(unittest.TestCase):
             self.assertEqual(primary_button.property("resolvedTextColor").name(), "#667085")
             self.assertEqual(port_selector.property("resolvedBaseColor").name(), "#f9fafb")
             self.assertEqual(port_selector.property("resolvedIndicatorColor").name(), "#182230")
+            self.assertEqual(port_selector.property("resolvedBorderColor").name(), "#98a2b3")
 
             view_model.toggleTheme(); APP.processEvents()
             self.assertEqual(header_button.property("resolvedTextColor").name(), "#f2f4f7")
             self.assertEqual(primary_button.property("resolvedTextColor").name(), "#aab2c0")
             self.assertEqual(port_selector.property("resolvedBaseColor").name(), "#1d2435")
             self.assertEqual(port_selector.property("resolvedIndicatorColor").name(), "#f2f4f7")
+            self.assertEqual(port_selector.property("resolvedBorderColor").name(), "#667085")
+            engine.clearComponentCache()
+
+    def test_settings_fit_without_scroll_and_switches_use_accent_when_checked(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            engine, view_model, window = self.load_window(temporary)
+            view_model.openSettings(); APP.processEvents()
+            settings = window.findChild(QObject, "settingsDialog")
+            close_button = window.findChild(QObject, "settingsCloseButton")
+            auto_switch = window.findChild(QObject, "autoConnectSwitch")
+            self.assertTrue(settings.property("visible"))
+            self.assertTrue(close_button.property("visible"))
+            self.assertEqual(auto_switch.property("resolvedTrackColor").name(), "#f2f4f7")
+            view_model.setAutoConnect(True); APP.processEvents()
+            self.assertEqual(auto_switch.property("resolvedTrackColor").name(), "#6757d9")
+            settings_source = (qml_root() / "dialogs" / "SettingsDialog.qml").read_text(encoding="utf-8")
+            self.assertNotIn("ScrollView", settings_source)
+            self.assertNotIn("AppScrollBar", settings_source)
             engine.clearComponentCache()
 
     def test_responsive_breakpoints_preserve_selection_and_theme(self):

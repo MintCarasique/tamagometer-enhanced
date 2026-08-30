@@ -8,6 +8,9 @@ ComboBox {
     readonly property color resolvedIndicatorColor: enabled
         ? AppTheme.Theme.text
         : AppTheme.Theme.disabledText
+    readonly property color resolvedBorderColor: activeFocus
+        ? AppTheme.Theme.accent
+        : AppTheme.Theme.borderStrong
     palette.base: resolvedBaseColor
     palette.window: AppTheme.Theme.surface
     palette.text: AppTheme.Theme.text
@@ -23,5 +26,12 @@ ComboBox {
         width: 18; height: 18
         name: "chevron-down"
         color: control.resolvedIndicatorColor
+    }
+
+    background: Rectangle {
+        radius: 6
+        color: AppTheme.Theme.control
+        border.width: control.activeFocus ? 2 : 1
+        border.color: control.resolvedBorderColor
     }
 }

@@ -7,7 +7,7 @@ Item {
     objectName: "catalogGrid"
     required property var catalogModel
     readonly property int scrollbarGutter: 18
-    implicitHeight: 400
+    implicitHeight: 440
 
     GridView {
         id: grid

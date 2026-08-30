@@ -42,6 +42,10 @@ release must have a completed entry here before the tag is pushed.
 - Replaced font glyphs used as controls with consistently drawn UI icons and
   reserved a dedicated catalog gutter so its scrollbar cannot cover favorite
   actions.
+- Removed scrolling from Settings, corrected switch state styling, restored a
+  recognizable gear icon, and added visible dropdown borders in both themes.
+- Made the catalog and transfer cards fill the available row at equal heights
+  while keeping the final visible catalog row entirely inside its container.
 
 ## [2.0.0] - 2026-08-29
 

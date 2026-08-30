@@ -54,6 +54,7 @@ ApplicationWindow {
 
         ColumnLayout {
             width: parent.width
+            height: Math.max(implicitHeight, window.height)
             spacing: 0
 
             Rectangle {
@@ -89,6 +90,7 @@ ApplicationWindow {
 
             ColumnLayout {
                 Layout.fillWidth: true
+                Layout.fillHeight: true
                 Layout.leftMargin: window.compactLayout ? 12 : 24
                 Layout.rightMargin: window.compactLayout ? 12 : 24
                 Layout.topMargin: 18; Layout.bottomMargin: 26
@@ -139,14 +141,17 @@ ApplicationWindow {
 
                 GridLayout {
                     Layout.fillWidth: true
+                    Layout.fillHeight: true
                     columns: window.compactLayout ? 1 : 2
                     columnSpacing: 16
                     rowSpacing: 16
 
                     ConnectionCard {
+                        objectName: "catalogCard"
                         Layout.fillWidth: true
+                        Layout.fillHeight: true
                         Layout.preferredWidth: 700
-                        Layout.minimumHeight: window.viewModel.legacyMode ? 260 : 570
+                        Layout.minimumHeight: window.viewModel.legacyMode ? 260 : 620
                         visible: !window.viewModel.legacyMode
 
                         Label {
@@ -211,7 +216,9 @@ ApplicationWindow {
                     }
 
                     TransferPanel {
+                        objectName: "transferPanel"
                         Layout.fillWidth: true
+                        Layout.fillHeight: true
                         Layout.preferredWidth: 340
                         Layout.alignment: Qt.AlignTop
                         viewModel: window.viewModel
