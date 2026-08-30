@@ -26,6 +26,12 @@ through scrolling, and exposes keyboard focus and accessible control names.
 Useful shortcuts include `Ctrl+,` for Settings, `Ctrl+D` for Diagnostics,
 `Ctrl+R` for Repeat, and `Escape` to cancel an active transfer.
 
+Phase 5 uses a separate Qt-only release entry point, pinned PySide6 Essentials,
+and a reproducible PyInstaller command. The one-file executable is retained for
+GitHub Releases because it is substantially easier to distribute than the
+multi-thousand-file one-folder prototype. The Tk interface remains available
+from source until the packaged hardware checklist has passed.
+
 ## Desktop 2.0 UI
 
 Version 2.0 adds first-run setup and automatic connection,
@@ -123,6 +129,19 @@ Run the protocol tests with:
 python -m unittest discover -s tests -v
 ```
 
+Build the release executable from `desktop/` with:
+
+```powershell
+python tools/build_desktop.py --mode onefile --dist-dir ../release --clean
+```
+
+Use `--mode onedir` for an unpacked troubleshooting build. GitHub Actions
+starts the packaged executable in an offscreen smoke test and enforces a 220 MiB
+size guardrail. Before a 3.0 release, complete
+[`HARDWARE_SMOKE_TEST.md`](HARDWARE_SMOKE_TEST.md). Runtime license details are
+listed in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) and attached to
+each release.
+
 The Flipper source is in the repository's [`flipper/`](../flipper/) submodule and builds with
 [uFBT](https://github.com/flipperdevices/flipperzero-ufbt).
 
@@ -136,11 +155,13 @@ is split by responsibility:
 - `tamagometer_desktop/theme.py` — colors and ttk styles;
 - `tamagometer_desktop/modes.py` — supported modes and item catalogs;
 - `tamagometer_desktop/settings.py` — configuration persistence;
-- `tamagometer_desktop/transfer.py` — background transfer orchestration.
+- `tamagometer_desktop/transfer.py` — background transfer orchestration;
 - `tamagometer_desktop/catalog.py` — categories, favorites keys, and sprite mapping;
 - `tamagometer_desktop/alignment.py` — animated IR/LF placement guide;
 - `tamagometer_desktop/onboarding.py` — first-run setup;
-- `tamagometer_desktop/diagnostics.py` — privacy-conscious report export.
+- `tamagometer_desktop/diagnostics.py` — privacy-conscious report export;
+- `qt_app.py` — Qt-only release entry point;
+- `tools/build_desktop.py` — shared local/CI packaging command.
 
 Protocol encoding and serial transport remain isolated in `tamagometer_core.py`,
 `friends_core.py`, `flipper_serial.py`, and the shared structured states in

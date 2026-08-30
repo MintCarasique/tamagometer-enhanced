@@ -151,14 +151,19 @@ Run its protocol tests with:
 python -m unittest discover -s tests -v
 ```
 
-Create a standalone Windows build with PyInstaller:
+Create the same Qt-only standalone Windows build used by GitHub Actions:
 
 ```powershell
-pyinstaller --noconfirm --clean --onefile --windowed --name TamagometerDesktop app.py
+python tools/build_desktop.py --mode onefile --dist-dir ../release --clean
 ```
 
 During the 3.0 migration, `python app.py` starts the Qt interface and
 `python app.py --tk` starts the retained Tkinter interface.
+Release packaging intentionally starts from `qt_app.py`, so Tcl/Tk is not
+included in the distributed executable. See
+[`desktop/THIRD_PARTY_NOTICES.md`](desktop/THIRD_PARTY_NOTICES.md) for runtime
+licenses and [`desktop/HARDWARE_SMOKE_TEST.md`](desktop/HARDWARE_SMOKE_TEST.md)
+for the pre-release physical-device checklist.
 
 ### Flipper companion
 

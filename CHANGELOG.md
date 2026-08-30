@@ -23,6 +23,10 @@ release must have a completed entry here before the tag is pushed.
 - Added compact, medium, and wide responsive layouts, keyboard navigation,
   global shortcuts, accessible control metadata, visible focus, and a persisted
   reduced-motion preference.
+- Added a Qt-only release entry point and reproducible one-file packaging that
+  omits the retained Tk UI and uses the smaller PySide6 Essentials runtime.
+- Added packaged-application startup and size checks to GitHub Actions, QML
+  linting, third-party notices, and a physical-device release checklist.
 
 ### Fixed
 

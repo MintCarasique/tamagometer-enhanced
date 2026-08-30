@@ -37,7 +37,7 @@ The reusable application and protocol layer consists mainly of:
 - `desktop/tamagometer_core.py` and `desktop/friends_core.py` — protocol data and
   encoding.
 
-There are currently 38 passing unit tests under `desktop/tests/`. Preserve these
+There are currently more than 50 passing unit tests under `desktop/tests/`. Preserve these
 tests and add Qt-facing tests rather than replacing the existing protocol tests.
 
 ## Implementation status — 3.0.0
@@ -79,6 +79,18 @@ selection and an explicit `F` favorite shortcut; primary controls expose
 accessible names and focus. Global shortcuts cover Settings, Diagnostics,
 Repeat, and cancellation, and a persisted reduced-motion preference is exposed
 for nonessential animation.
+
+Phase 5 packaging is implemented for CI and local release builds. A Qt-only
+entry point prevents Tcl/Tk from entering the release executable, dependencies
+use the pinned PySide6 Essentials wheel instead of the full Addons bundle, and
+one-file PyInstaller packaging is the selected release format. One-folder and
+Nuitka/pyside6-deploy expectations were evaluated; the former is useful for
+library replacement and troubleshooting, while the latter remains an optional
+future optimization rather than a release-toolchain change during migration.
+CI lints QML, launches the packaged executable offscreen, enforces a size
+guardrail, and attaches third-party notices. Clean-machine and physical-device
+validation remains explicitly tracked in `desktop/HARDWARE_SMOKE_TEST.md`, so
+the Tk fallback is intentionally retained.
 
 ## UX defects the migration must address
 

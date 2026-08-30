@@ -42,6 +42,9 @@ jobs:
       - name: Run unit tests
         run: python -m unittest discover -s tests -v
 
+      - name: Lint QML sources
+        run: find tamagometer_desktop/qt/qml -name '*.qml' -print0 | xargs -0 pyside6-qmllint
+
       - name: Compile Python sources
         run: python -m compileall -q .
 
@@ -67,18 +70,40 @@ jobs:
         run: python -m pip install -r requirements-dev.txt
 
       - name: Build standalone executable
-        run: >-
-          pyinstaller --noconfirm --clean --onefile --windowed
-          --name TamagometerDesktop --distpath ../release
-          --add-data "assets;assets"
-          --add-data "tamagometer_desktop/qt/qml;tamagometer_desktop/qt/qml"
-          app.py
+        run: python tools/build_desktop.py --mode onefile --dist-dir ../release --clean
+
+      - name: Smoke test packaged application
+        shell: pwsh
+        run: |
+          $env:QT_QPA_PLATFORM = "offscreen"
+          $executable = Resolve-Path ../release/TamagometerDesktop.exe
+          $process = Start-Process -FilePath $executable -WindowStyle Hidden -PassThru
+          Start-Sleep -Seconds 10
+          if ($process.HasExited) {
+            throw "Packaged application exited during startup with code $($process.ExitCode)"
+          }
+          Get-Process -Name TamagometerDesktop -ErrorAction SilentlyContinue | Stop-Process -Force
+
+      - name: Check release size
+        shell: pwsh
+        run: |
+          $artifact = Get-Item ../release/TamagometerDesktop.exe
+          Write-Host "Windows artifact: $([math]::Round($artifact.Length / 1MB, 1)) MiB"
+          if ($artifact.Length -gt 220MB) {
+            throw "Windows artifact exceeded the 220 MiB release guardrail"
+          }
+
+      - name: Include third-party notices
+        shell: pwsh
+        run: Copy-Item THIRD_PARTY_NOTICES.md ../release/THIRD_PARTY_NOTICES.md
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v7
         with:
           name: TamagometerDesktop-windows
-          path: release/TamagometerDesktop.exe
+          path: |
+            release/TamagometerDesktop.exe
+            release/THIRD_PARTY_NOTICES.md
           if-no-files-found: error
           retention-days: 14
 
@@ -140,7 +165,7 @@ jobs:
 
       - name: Generate checksums
         working-directory: release
-        run: sha256sum TamagometerDesktop.exe tamagometer_enhanced.fap > SHA256SUMS.txt
+        run: sha256sum TamagometerDesktop.exe tamagometer_enhanced.fap THIRD_PARTY_NOTICES.md > SHA256SUMS.txt
 
       - name: Extract readable release notes
         shell: bash
@@ -162,6 +187,7 @@ jobs:
           files: |
             release/TamagometerDesktop.exe
             release/tamagometer_enhanced.fap
+            release/THIRD_PARTY_NOTICES.md
             release/SHA256SUMS.txt
           fail_on_unmatched_files: true
           body_path: release/RELEASE_NOTES.md
