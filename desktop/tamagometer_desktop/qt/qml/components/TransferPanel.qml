@@ -15,8 +15,9 @@ ConnectionCard {
         font.weight: Font.DemiBold
     }
     Rectangle {
+        objectName: "transferPreview"
         Layout.fillWidth: true
-        implicitHeight: 130
+        Layout.preferredHeight: 130
         radius: 12
         color: AppTheme.Theme.surfaceAlt
         Image {
@@ -35,28 +36,49 @@ ConnectionCard {
             font.pixelSize: 17
         }
     }
-    Label {
+    Item {
+        objectName: "transferTitleSlot"
         Layout.fillWidth: true
-        text: root.viewModel.legacyMode ? "Automatic game or gift" : (root.catalogModel.selectedName || "Select an item")
-        color: AppTheme.Theme.text
-        font.pixelSize: 17
-        font.weight: Font.DemiBold
-        wrapMode: Text.WordWrap
+        Layout.preferredHeight: 52
+        Label {
+            anchors.fill: parent
+            text: root.viewModel.legacyMode ? "Automatic game or gift" : (root.catalogModel.selectedName || "Select an item")
+            color: AppTheme.Theme.text
+            font.pixelSize: 17
+            font.weight: Font.DemiBold
+            wrapMode: Text.WordWrap
+            verticalAlignment: Text.AlignVCenter
+        }
     }
-    Label {
-        visible: !root.viewModel.legacyMode && root.catalogModel.selectedDisplayId.length > 0
-        text: root.catalogModel.selectedDisplayId
-        color: AppTheme.Theme.muted
-    }
-    Label {
+    Item {
+        objectName: "transferMetadataSlot"
         Layout.fillWidth: true
-        text: root.viewModel.instructions
-        color: AppTheme.Theme.muted
-        wrapMode: Text.WordWrap
+        Layout.preferredHeight: 22
+        Label {
+            anchors.fill: parent
+            text: root.viewModel.legacyMode ? "" : root.catalogModel.selectedDisplayId
+            color: AppTheme.Theme.muted
+            verticalAlignment: Text.AlignVCenter
+        }
     }
+    Item {
+        objectName: "transferInstructionsSlot"
+        Layout.fillWidth: true
+        Layout.preferredHeight: 76
+        Label {
+            anchors.fill: parent
+            text: root.viewModel.instructions
+            color: AppTheme.Theme.muted
+            wrapMode: Text.WordWrap
+            verticalAlignment: Text.AlignVCenter
+        }
+    }
+    Item { Layout.fillHeight: true }
     ProgressBar {
         id: progress
+        objectName: "transferProgress"
         Layout.fillWidth: true
+        Layout.preferredHeight: 8
         value: root.viewModel.transferProgress
         background: Rectangle {
             implicitHeight: 8
@@ -74,11 +96,17 @@ ConnectionCard {
             }
         }
     }
-    Label {
+    Item {
+        objectName: "transferStatusSlot"
         Layout.fillWidth: true
-        text: root.viewModel.transferStatus
-        color: AppTheme.Theme.accent
-        wrapMode: Text.WordWrap
+        Layout.preferredHeight: 22
+        Label {
+            anchors.fill: parent
+            text: root.viewModel.transferStatus
+            color: AppTheme.Theme.accent
+            wrapMode: Text.WordWrap
+            verticalAlignment: Text.AlignVCenter
+        }
     }
     AppButton {
         objectName: "primaryTransferAction"
@@ -91,7 +119,9 @@ ConnectionCard {
         Accessible.description: root.viewModel.primaryActionHint
     }
     RowLayout {
+        objectName: "transferSecondaryActions"
         Layout.fillWidth: true
+        Layout.preferredHeight: AppTheme.Theme.controlHeight
         AppButton {
             iconName: "refresh"
             Layout.fillWidth: true
@@ -107,11 +137,17 @@ ConnectionCard {
             onClicked: root.viewModel.cancelTransfer()
         }
     }
-    Label {
+    Item {
+        objectName: "transferHintSlot"
         Layout.fillWidth: true
-        text: root.viewModel.primaryActionHint
-        color: AppTheme.Theme.warning
-        wrapMode: Text.WordWrap
-        font.pixelSize: 12
+        Layout.preferredHeight: 42
+        Label {
+            anchors.fill: parent
+            text: root.viewModel.primaryActionHint
+            color: AppTheme.Theme.warning
+            wrapMode: Text.WordWrap
+            font.pixelSize: 12
+            verticalAlignment: Text.AlignVCenter
+        }
     }
 }

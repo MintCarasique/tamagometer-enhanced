@@ -48,6 +48,9 @@ release must have a completed entry here before the tag is pushed.
   while keeping the final visible catalog row entirely inside its container.
 - Standardized buttons, text inputs, and dropdowns on the same 40-pixel control
   height, including all three header actions.
+- Rebuilt Transfer as one mode-independent slot layout so preview, title,
+  metadata, instructions, progress, status, and action controls keep identical
+  geometry for Connection, Friends, and original V2/V3.
 
 ## [2.0.0] - 2026-08-29
 

@@ -175,6 +175,37 @@ class QmlSmokeTests(unittest.TestCase):
                 self.assertIsNotNone(window.findChild(QObject, object_name))
             engine.clearComponentCache()
 
+    def test_transfer_slots_stay_aligned_across_device_modes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            engine, view_model, window = self.load_window(temporary)
+            slot_names = (
+                "transferPreview",
+                "transferTitleSlot",
+                "transferMetadataSlot",
+                "transferInstructionsSlot",
+                "transferProgress",
+                "transferStatusSlot",
+                "primaryTransferAction",
+                "transferSecondaryActions",
+                "transferHintSlot",
+            )
+            slots = {
+                name: window.findChild(QObject, name)
+                for name in slot_names
+            }
+            self.assertTrue(all(item is not None for item in slots.values()))
+
+            geometries = {}
+            for mode in ("connection", "friends", "legacy"):
+                view_model.setMode(mode); APP.processEvents()
+                geometries[mode] = {
+                    name: (round(item.y()), round(item.height()))
+                    for name, item in slots.items()
+                }
+            self.assertEqual(geometries["connection"], geometries["friends"])
+            self.assertEqual(geometries["connection"], geometries["legacy"])
+            engine.clearComponentCache()
+
 
 class QtWorkflowTests(unittest.TestCase):
     class FakeConnection:
