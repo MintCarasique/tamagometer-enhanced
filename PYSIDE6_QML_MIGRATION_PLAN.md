@@ -15,14 +15,19 @@ explicitly scoped defect requires it.
 
 ## Current state
 
-The desktop application is located in `desktop/` and starts from `desktop/app.py`.
-The current presentation layer consists mainly of:
+The desktop application is located in `desktop/` and starts from
+`desktop/app.py`. The released presentation layer consists mainly of:
 
-- `desktop/tamagometer_desktop/window.py` — main Tk window, event handling, and
-  view state;
-- `desktop/tamagometer_desktop/onboarding.py` — first-run setup window;
-- `desktop/tamagometer_desktop/alignment.py` — animated IR/LF placement guide;
-- `desktop/tamagometer_desktop/theme.py` — ttk styles and palettes.
+- `desktop/tamagometer_desktop/qt/application.py` — Qt application startup;
+- `desktop/tamagometer_desktop/qt/app_view_model.py` — GUI-thread state and
+  service adapter;
+- `desktop/tamagometer_desktop/qt/catalog_model.py` — filterable QML catalog;
+- `desktop/tamagometer_desktop/qt/qml/` — responsive screens, dialogs, themes,
+  and reusable controls.
+
+The previous Tk presentation remains in `window.py`, `onboarding.py`,
+`alignment.py`, and `theme.py`, and is available explicitly through
+`python app.py --tk` for development comparison.
 
 The reusable application and protocol layer consists mainly of:
 
@@ -41,16 +46,16 @@ The protocol, serial, catalog, settings, and Qt workflows have automated tests
 under `desktop/tests/`. Preserve behavior-focused coverage and avoid tests that
 only pin implementation details already exercised by the release build.
 
-## Implementation status — 3.0.0-rc.1
+## Implementation status — 3.0.0 released
 
-Work is active on `feature/pyside6-qml`. The first architectural slice now
-contains the Phase 0 guardrails and initial Phase 1 shell:
+The migration was completed on `feature/pyside6-qml` and released as 3.0.0.
+The delivered implementation includes:
 
 - the 38-test baseline is preserved and Qt-facing tests are additive;
 - inherited WebP-content files are normalized to real PNG and validated for
   signatures and decodeability;
 - unknown standalone COM ports are no longer silently auto-selected;
-- `app.py` starts a responsive PySide6/QML catalog preview by default;
+- `app.py` starts the responsive PySide6/QML application by default;
 - `app.py --tk` retains the complete Tkinter hardware workflow;
 - the QML catalog supports categories, favorites, recent ordering, explicit
   favorite controls, and name/category/decimal/hex search;
@@ -61,9 +66,9 @@ Phase 2 is now implemented in the Qt UI: Companion connection runs outside the
 GUI thread, `QTimer` drains connection and transfer queues on the GUI thread,
 and Connection 2024, Friends, and original V2/V3 expose start, progress,
 cancellation, completion, repeat, and disconnect/error states. These paths have
-automated simulated coverage. The UI and packaging phases are complete for
-`3.0.0-rc.1`; the remaining gate for the final `3.0.0` release is the physical
-hardware and clean-machine checklist.
+automated simulated coverage. The UI and packaging phases are complete, and
+the packaged release candidate passed physical-hardware validation before the
+final `3.0.0` release.
 
 Phase 3 is implemented: onboarding persists distinct skipped and completed
 states, closing it does not record either outcome, setup can be reopened from
@@ -90,8 +95,8 @@ library replacement and troubleshooting, while the latter remains an optional
 future optimization rather than a release-toolchain change during migration.
 CI lints QML, launches the packaged executable offscreen, enforces a size
 guardrail, and attaches third-party notices. Clean-machine and physical-device
-validation remains explicitly tracked in `desktop/HARDWARE_SMOKE_TEST.md`, so
-the Tk fallback is intentionally retained.
+validation is tracked in `desktop/HARDWARE_SMOKE_TEST.md`. The Tk fallback is
+retained as a source-only development and comparison path.
 
 Before the RC, the QML shell was decomposed into header, connection, catalog,
 legacy, transfer-summary, and transfer-action components. The Qt view model now

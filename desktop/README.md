@@ -11,14 +11,14 @@ Flipper Zero. The interface supports three distinct protocols:
 
 The app is unofficial and is not affiliated with Bandai.
 
-Current stable Desktop version: **2.0.0**. Desktop and Companion builds should
+Current stable Desktop version: **3.0.0**. Desktop and Companion builds should
 come from the same GitHub Release; see the parent
 [`CHANGELOG.md`](../CHANGELOG.md) for release history.
 
-The source tree currently identifies as **3.0.0-rc.1**. The PySide6/Qt Quick UI
-is the default source and packaged entry point and supports all three hardware
-transfer workflows. Use `python app.py --tk` to compare against the retained
-Tkinter implementation while the release candidate is validated.
+The source tree identifies as **3.0.0**. The PySide6/Qt Quick UI is the default
+source and packaged entry point and supports all three hardware transfer
+workflows. Use `python app.py --tk` to compare against the retained Tkinter
+implementation.
 The Qt UI also includes repeatable first-run setup, an explained auto-connect
 preference, About information, and a diagnostics drawer with copy/export.
 Its responsive layout supports a 720×620 minimum window, preserves all content
@@ -26,19 +26,19 @@ through scrolling, and exposes keyboard focus and accessible control names.
 Useful shortcuts include `Ctrl+,` for Settings, `Ctrl+D` for Diagnostics,
 `Ctrl+R` for Repeat, and `Escape` to cancel an active transfer.
 
-The release candidate uses a separate Qt-only release entry point, pinned
+The release uses a separate Qt-only release entry point, pinned
 PySide6 Essentials, and a reproducible PyInstaller command. The one-file
 executable is retained for GitHub Releases because it is substantially easier
 to distribute than the multi-thousand-file one-folder prototype. The Tk
-interface remains available from source until the packaged hardware checklist
-has passed.
+interface remains available from source as a development fallback.
 
-## Desktop 2.0 UI
+## Desktop 3.0 UI
 
-Version 2.0 adds first-run setup and automatic connection,
-an animated IR/LF placement guide, light and dark themes, inline notifications,
-real transfer progress, categories, favorites, recently sent items, **Repeat
-last transfer**, single-file diagnostic export, and original V2/V3 fallback.
+Version 3.0 provides a unified PySide6/Qt Quick implementation of first-run
+setup, automatic connection, IR/LF placement guidance, light and dark themes,
+inline notifications, real transfer progress, categories, favorites, recently
+sent items, **Repeat last transfer**, single-file diagnostic export, and the
+original V2/V3 fallback.
 
 Connection item previews reuse the sprites already present in the upstream
 Tamagometer web interface. The upstream set provides a usable image for 171 of
@@ -68,7 +68,7 @@ The enhanced companion retains Connection IR support, so it replaces the
 Catalog version for both modes. Release FAPs are built with the latest official
 Flipper release SDK available at build time.
 
-Desktop 2.0 performs a capability handshake during connection and requires the
+Desktop 3.0 performs a capability handshake during connection and requires the
 matching Tamagometer Enhanced Companion 2.0.0 or newer. It automatically picks
 a likely Flipper COM port and reconnects when a previously connected Flipper
 returns after a USB interruption.

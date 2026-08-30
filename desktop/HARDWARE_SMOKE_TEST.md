@@ -37,3 +37,11 @@ models used.
 Do not remove the `python app.py --tk` development fallback or call Desktop
 3.0 hardware-verified until all applicable checks above pass on the packaged
 build.
+
+## 3.0.0 release validation
+
+- Release candidate tested: `v3.0.0-rc.1`.
+- Result reported on 2026-08-30: packaged Desktop and matching Flipper
+  Companion operate successfully with physical Tamagotchi hardware.
+- Automated release checks cover Linux tests/QML lint, Windows packaging and
+  startup, executable size, FAP compilation, release notes, and checksums.

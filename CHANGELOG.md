@@ -4,7 +4,7 @@ This file records user-visible changes in Tamagometer Enhanced. Release notes
 for a `vX.Y.Z` tag are taken from the matching `## [X.Y.Z]` section, so every
 release must have a completed entry here before the tag is pushed.
 
-## [3.0.0-rc.1] - 2026-08-30
+## [3.0.0] - 2026-08-30
 
 ### Changed
 
@@ -58,6 +58,11 @@ release must have a completed entry here before the tag is pushed.
   Qt view model without changing the protocol layer.
 - Removed brittle tests that asserted source-code structure or duplicated the
   executable build checks already performed by the release workflow.
+
+### Verified
+
+- Promoted the release candidate after successful testing with the packaged
+  Desktop application, Flipper Companion, and physical Tamagotchi hardware.
 
 ## [2.0.0] - 2026-08-29
 
