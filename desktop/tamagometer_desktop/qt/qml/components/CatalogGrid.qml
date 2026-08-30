@@ -6,6 +6,7 @@ Item {
     id: root
     objectName: "catalogGrid"
     required property var catalogModel
+    readonly property int scrollbarGutter: 18
     implicitHeight: 400
 
     GridView {
@@ -13,7 +14,9 @@ Item {
         anchors.fill: parent
         clip: true
         model: root.catalogModel
-        cellWidth: Math.max(220, width / Math.max(1, Math.floor(width / 250)))
+        readonly property real usableWidth: width - root.scrollbarGutter
+        readonly property int columnCount: Math.max(1, Math.floor(usableWidth / 250))
+        cellWidth: Math.max(220, usableWidth / columnCount)
         cellHeight: 88
         currentIndex: root.catalogModel.selectedIndex
         boundsBehavior: Flickable.StopAtBounds
@@ -21,7 +24,7 @@ Item {
         keyNavigationEnabled: true
         Accessible.role: Accessible.List
         Accessible.name: "Gift and reward catalog"
-        ScrollBar.vertical: AppScrollBar {}
+        ScrollBar.vertical: AppScrollBar { width: 10 }
         delegate: CatalogItem {
             required property int index
             required property string name

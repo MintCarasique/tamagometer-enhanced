@@ -75,10 +75,11 @@ ApplicationWindow {
                     }
                     Flow {
                         Layout.fillWidth: true; spacing: 8
-                        AppButton { objectName: "headerDiagnosticsButton"; text: "Diagnostics"; onClicked: window.viewModel.openDiagnostics(); Accessible.name: "Open diagnostics, Control D" }
-                        AppButton { text: "Settings"; onClicked: window.viewModel.openSettings(); Accessible.name: "Open settings, Control comma" }
+                        AppButton { objectName: "headerDiagnosticsButton"; iconName: "diagnostics"; text: "Diagnostics"; onClicked: window.viewModel.openDiagnostics(); Accessible.name: "Open diagnostics, Control D" }
+                        AppButton { iconName: "settings"; text: "Settings"; onClicked: window.viewModel.openSettings(); Accessible.name: "Open settings, Control comma" }
                         AppButton {
-                            text: window.viewModel.darkTheme ? "☀ Light" : "☾ Dark"
+                            iconName: window.viewModel.darkTheme ? "sun" : "moon"
+                            text: window.viewModel.darkTheme ? "Light" : "Dark"
                             onClicked: window.viewModel.toggleTheme()
                             Accessible.name: "Toggle color theme"
                         }
@@ -114,8 +115,9 @@ ApplicationWindow {
                             onActivated: window.viewModel.setSelectedPort(currentValue)
                             Accessible.name: "Flipper serial port"
                         }
-                        AppButton { text: "Refresh"; onClicked: window.viewModel.refreshPorts() }
+                        AppButton { iconName: "refresh"; text: "Refresh"; onClicked: window.viewModel.refreshPorts() }
                         AppButton {
+                            iconName: "link"
                             text: window.viewModel.connected ? "Disconnect" : (window.viewModel.connectionState === "connecting" ? "Connecting…" : "Connect")
                             enabled: window.viewModel.connectionState !== "connecting" && !window.viewModel.canCancelTransfer
                             onClicked: window.viewModel.toggleConnection()
@@ -129,6 +131,7 @@ ApplicationWindow {
                     text: window.viewModel.noticeSummary
                 }
                 AppButton {
+                    iconName: "diagnostics"
                     visible: window.viewModel.noticeDetail.length > 0
                     text: "Show technical details"
                     onClicked: window.viewModel.openDiagnostics()

@@ -84,6 +84,7 @@ ConnectionCard {
         objectName: "primaryTransferAction"
         Layout.fillWidth: true
         primary: true
+        iconName: "send"
         text: root.viewModel.primaryActionLabel
         enabled: root.viewModel.canStartTransfer
         onClicked: root.viewModel.startTransfer()
@@ -92,12 +93,14 @@ ConnectionCard {
     RowLayout {
         Layout.fillWidth: true
         AppButton {
+            iconName: "refresh"
             Layout.fillWidth: true
             text: "Repeat"
             enabled: root.viewModel.canRepeatTransfer
             onClicked: root.viewModel.repeatLastTransfer()
         }
         AppButton {
+            iconName: "close"
             Layout.fillWidth: true
             text: "Cancel"
             enabled: root.viewModel.canCancelTransfer

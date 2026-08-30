@@ -36,13 +36,13 @@ Popup {
             onToggled: root.viewModel.setReducedMotion(checked)
             Accessible.description: "Disables optional interface animation while preserving transfer progress."
         }
-        AppButton { Layout.fillWidth: true; text: "Run setup again"; onClicked: root.viewModel.runSetupAgain() }
-        AppButton { Layout.fillWidth: true; text: "Open diagnostics"; onClicked: { root.viewModel.closeSettings(); root.viewModel.openDiagnostics() } }
+        AppButton { Layout.fillWidth: true; iconName: "refresh"; text: "Run setup again"; onClicked: root.viewModel.runSetupAgain() }
+        AppButton { Layout.fillWidth: true; iconName: "diagnostics"; text: "Open diagnostics"; onClicked: { root.viewModel.closeSettings(); root.viewModel.openDiagnostics() } }
         Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: AppTheme.Theme.border }
         Label { text: "About"; color: AppTheme.Theme.text; font.pixelSize: 18; font.weight: Font.DemiBold }
         Label { Layout.fillWidth: true; text: "Tamagometer Enhanced Desktop " + root.viewModel.version + "\nRequires Tamagometer Enhanced Companion 2.0.0 or newer.\nIndependent enhanced fork of the MIT-licensed Tamagometer project. Unofficial and not affiliated with Bandai."; color: AppTheme.Theme.muted; wrapMode: Text.WordWrap }
         Item { Layout.fillHeight: true }
-        AppButton { Layout.alignment: Qt.AlignRight; text: "Close"; onClicked: root.viewModel.closeSettings() }
+        AppButton { Layout.alignment: Qt.AlignRight; iconName: "close"; text: "Close"; onClicked: root.viewModel.closeSettings() }
         }
     }
 }

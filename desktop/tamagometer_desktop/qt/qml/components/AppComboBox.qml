@@ -17,11 +17,11 @@ ComboBox {
     palette.highlightedText: "#FFFFFF"
     palette.placeholderText: AppTheme.Theme.muted
 
-    indicator: Text {
+    indicator: UiIcon {
         x: control.width - width - control.rightPadding
         y: Math.round((control.height - height) / 2)
-        text: "⌄"
+        width: 18; height: 18
+        name: "chevron-down"
         color: control.resolvedIndicatorColor
-        font.pixelSize: 18
     }
 }

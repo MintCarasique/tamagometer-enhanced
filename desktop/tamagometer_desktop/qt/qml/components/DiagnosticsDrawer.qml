@@ -20,7 +20,7 @@ Drawer {
         RowLayout {
             Layout.fillWidth: true
             Label { Layout.fillWidth: true; text: "Diagnostics"; color: AppTheme.Theme.text; font.pixelSize: 23; font.weight: Font.DemiBold }
-            AppButton { text: "Close"; onClicked: root.viewModel.closeDiagnostics() }
+            AppButton { iconName: "close"; text: "Close"; onClicked: root.viewModel.closeDiagnostics() }
         }
         Label { Layout.fillWidth: true; text: "The report omits USB hardware IDs and other private identifiers."; color: AppTheme.Theme.muted; wrapMode: Text.WordWrap }
         TextArea {

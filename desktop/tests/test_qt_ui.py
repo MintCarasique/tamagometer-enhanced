@@ -88,12 +88,26 @@ class QmlSmokeTests(unittest.TestCase):
             self.assertEqual(window.width(), 1280)
             self.assertEqual(window.height(), 940)
             scroll = window.findChild(QObject, "mainScrollView")
+            catalog = window.findChild(QObject, "catalogGrid")
             self.assertIsNotNone(scroll)
+            self.assertEqual(catalog.property("scrollbarGutter"), 18)
             self.assertLessEqual(
                 float(scroll.property("contentHeight")),
                 float(scroll.property("availableHeight")) + 1,
             )
             engine.clearComponentCache()
+
+    def test_interactive_icons_do_not_use_font_glyphs(self):
+        qml_directory = qml_root()
+        sources = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in qml_directory.rglob("*.qml")
+        )
+        for glyph in ("★", "☆", "☀", "☾", "⌄", "▼", "▲"):
+            self.assertNotIn(glyph, sources)
+        icon_source = (qml_directory / "components" / "UiIcon.qml").read_text(encoding="utf-8")
+        for icon_name in ("chevron-down", "star", "sun", "moon", "settings", "diagnostics"):
+            self.assertIn(f'root.name === "{icon_name}"', icon_source)
 
     def test_control_palette_follows_the_app_theme(self):
         with tempfile.TemporaryDirectory() as temporary:

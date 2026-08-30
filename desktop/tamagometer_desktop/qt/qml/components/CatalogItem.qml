@@ -58,11 +58,13 @@ Rectangle {
         elide: Text.ElideRight
         font.pixelSize: 12
     }
-    ToolButton {
+    AppButton {
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.margins: 6
-        text: card.itemFavorite ? "★" : "☆"
+        iconOnly: true
+        iconName: "star"
+        iconFilled: card.itemFavorite
         onClicked: card.favoriteClicked(card.rowIndex)
         Accessible.name: card.itemFavorite ? "Remove from favorites" : "Add to favorites"
         Accessible.description: "Favorite control for " + card.itemName

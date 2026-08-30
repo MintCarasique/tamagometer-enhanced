@@ -39,6 +39,9 @@ release must have a completed entry here before the tag is pushed.
   progress bars, and scrollbars in both themes.
 - Increased the default window to the wide layout and reduced unnecessary
   catalog height so the main workflow no longer starts vertically scrolled.
+- Replaced font glyphs used as controls with consistently drawn UI icons and
+  reserved a dedicated catalog gutter so its scrollbar cannot cover favorite
+  actions.
 
 ## [2.0.0] - 2026-08-29
 
