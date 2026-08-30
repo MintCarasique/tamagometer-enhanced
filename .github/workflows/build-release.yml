@@ -47,7 +47,10 @@ jobs:
           status=${PIPESTATUS[0]}
           set -e
           if (( status != 0 )); then
-            failure="$(tail -n 50 test-output.log)"
+            failure="$(awk '/^={20,}/{capture=1} capture' test-output.log | tail -n 50)"
+            if [[ -z "$failure" ]]; then
+              failure="$(tail -n 30 test-output.log)"
+            fi
             failure="${failure//'%'/'%25'}"
             failure="${failure//$'\r'/'%0D'}"
             failure="${failure//$'\n'/'%0A'}"
