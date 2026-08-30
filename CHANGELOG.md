@@ -51,6 +51,8 @@ release must have a completed entry here before the tag is pushed.
 - Rebuilt Transfer as one mode-independent slot layout so preview, title,
   metadata, instructions, progress, status, and action controls keep identical
   geometry for Connection, Friends, and original V2/V3.
+- Made diagnostic export resolve local file URLs correctly on both Windows and
+  Linux build agents.
 - Split the main QML screen and transfer card into focused reusable components,
   and separated serial polling, connection results, and transfer events in the
   Qt view model without changing the protocol layer.

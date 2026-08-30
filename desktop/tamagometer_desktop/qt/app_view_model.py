@@ -5,7 +5,7 @@ from dataclasses import replace
 from pathlib import Path
 import queue
 import threading
-from PySide6.QtCore import QObject, Property, QTimer, Signal, Slot
+from PySide6.QtCore import QObject, Property, QTimer, QUrl, Signal, Slot
 from PySide6.QtGui import QGuiApplication
 from flipper_serial import FlipperConnection, IncompatibleCompanionError, find_flipper_port, list_ports
 from transfer_status import TransferState
@@ -162,8 +162,7 @@ class AppViewModel(QObject):
         QGuiApplication.clipboard().setText(self.diagnosticsText); self._notice("success","Diagnostics copied to the clipboard.")
     @Slot(str)
     def exportDiagnostics(self,url):
-        path=url
-        if path.startswith("file:///"): path=path[8:]
+        path = QUrl(url).toLocalFile() if url.startswith("file:") else url
         try: Path(path).write_text(self.diagnosticsText,encoding="utf-8")
         except OSError as error: self._notice("error","Could not export diagnostics.",str(error))
         else: self._notice("success","Diagnostic report exported.")
