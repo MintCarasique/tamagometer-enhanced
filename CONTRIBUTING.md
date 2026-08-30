@@ -58,6 +58,24 @@ Release tags use the form `vX.Y.Z`. Before pushing a tag:
 The release workflow extracts the matching root changelog section verbatim.
 It intentionally does not publish an automatically generated list of commits.
 
+The repository includes compact PowerShell helpers for the routine workflow:
+
+```powershell
+# Run tests, QML lint, and compileall with output shown only on failure.
+.\tools\check.ps1
+
+# Squash a completed feature branch into main, verify it, push it, and remove
+# the local and remote feature branch.
+.\tools\squash-feature.ps1 -Branch feature/example -Message "Add example feature"
+
+# Validate metadata, create the tag, wait for Actions, and verify all assets.
+.\tools\release.ps1 -Version 3.1.0
+```
+
+Use `tools/commit.ps1` when a checked commit is useful without a merge. It
+requires either explicit `-Paths` or `-All`, so unrelated files are never staged
+implicitly. Feature branches are squash-merged to keep `main` concise.
+
 ## Legacy web and Pico code
 
 `web_interface_vue/` and `pico/` are inherited research tools from upstream and

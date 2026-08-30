@@ -152,8 +152,12 @@ python app.py
 Run its protocol tests with:
 
 ```powershell
-python -m unittest discover -s tests -v
+.\tools\check.ps1
 ```
+
+The helper keeps successful output compact and prints detailed test or lint
+logs only when a check fails. Maintainer squash-merge and release helpers are
+documented in [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 Create the same Qt-only standalone Windows build used by GitHub Actions:
 
