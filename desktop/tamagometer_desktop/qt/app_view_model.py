@@ -17,10 +17,16 @@ from ..settings import SettingsStore
 from ..transfer import AppEvent, TransferController
 from .catalog_model import CatalogModel
 
-STATE_PROGRESS = {TransferState.PREPARING: .05, TransferState.WAITING_FIRST_MESSAGE: .2,
-    TransferState.SENDING_ACKNOWLEDGEMENT: .4, TransferState.WAITING_GIFT_REQUEST: .55,
-    TransferState.SENDING_GIFT: .8, TransferState.SENDING_RESULT: .8,
-    TransferState.VERIFYING: .92, TransferState.COMPLETED: 1.0}
+STATE_PROGRESS = {
+    TransferState.PREPARING: 0.05,
+    TransferState.WAITING_FIRST_MESSAGE: 0.2,
+    TransferState.SENDING_ACKNOWLEDGEMENT: 0.4,
+    TransferState.WAITING_GIFT_REQUEST: 0.55,
+    TransferState.SENDING_GIFT: 0.8,
+    TransferState.SENDING_RESULT: 0.8,
+    TransferState.VERIFYING: 0.92,
+    TransferState.COMPLETED: 1.0,
+}
 
 class AppViewModel(QObject):
     modeChanged=Signal(); themeChanged=Signal(); connectionChanged=Signal()
@@ -245,48 +251,111 @@ class AppViewModel(QObject):
         if not self._pending_key: return
         recent=[k for k in self._settings.recent if k!=self._pending_key]; recent.insert(0,self._pending_key)
         self._save(recent=tuple(recent[:12]),last_transfer=self._pending_key); self._catalog.set_recent(self._settings.recent); self._pending_key=""
+
+    def _poll_ports(self):
+        self._poll_ticks += 1
+        if self._poll_ticks < 20:
+            return
+
+        self._poll_ticks = 0
+        ports = list(self._port_provider())
+        available_devices = {port.device.casefold() for port in ports}
+        connected_port = getattr(self._connection, "port", "")
+
+        if self.connected and connected_port.casefold() not in available_devices:
+            lost_port = connected_port or "the selected port"
+            self._connection.close()
+            self._connection_state = "disconnected"
+            self._connection_status = "Flipper disconnected"
+            self._notice(
+                "error",
+                "Flipper was disconnected.",
+                f"USB port {lost_port} is no longer available.",
+            )
+            self.connectionChanged.emit()
+            self.transferChanged.emit()
+
+        if [port.device for port in ports] != [port.device for port in self._ports]:
+            self._ports = ports
+            self.portsChanged.emit()
+
+    def _handle_connection_result(self, ok, port, payload):
+        if ok:
+            self._connection_state = "connected"
+            self._connection_status = f"Connected · {port} · Companion {payload.version}"
+            self._save(port=port)
+            self._notice("success", "Flipper connected and ready.")
+            if self._setup_connect_pending:
+                self._onboarding_ready = True
+                self._onboarding_state = "Connected successfully. Setup is ready to complete."
+                self._setup_connect_pending = False
+                self.uiChanged.emit()
+        else:
+            self._connection_state = "error"
+            self._connection_status = "Flipper connection failed"
+            summary = (
+                "The open Flipper app is incompatible."
+                if isinstance(payload, IncompatibleCompanionError)
+                else "Could not connect to Flipper."
+            )
+            self._notice("error", summary, str(payload))
+            if self._setup_connect_pending:
+                self._onboarding_state = "Connection failed. Check the cable and Companion, then retry."
+                self._setup_connect_pending = False
+                self.uiChanged.emit()
+
+        self.connectionChanged.emit()
+        self.transferChanged.emit()
+
+    def _drain_connection_results(self):
+        while True:
+            try:
+                result = self._connection_results.get_nowait()
+            except queue.Empty:
+                return
+            self._handle_connection_result(*result)
+
+    def _handle_transfer_event(self, event: AppEvent):
+        self._transfer_status = event.text
+        self._append_log(event.text)
+
+        if event.state:
+            self._transfer_state = event.state.value
+            if event.current is not None and event.total:
+                self._progress = event.current / event.total
+            else:
+                self._progress = STATE_PROGRESS.get(event.state, self._progress)
+
+        if event.kind == "done":
+            self._record_success()
+            self._notice("success", event.text)
+        elif event.kind == "cancelled":
+            self._pending_key = ""
+            self._notice("info", "Transfer cancelled.")
+        elif event.kind in {"error", "disconnected"}:
+            self._pending_key = ""
+            self._notice("error", "The transfer could not be completed.", event.text)
+            if event.kind == "disconnected":
+                self._connection_state = "disconnected"
+                self._connection_status = "Flipper disconnected"
+                self.connectionChanged.emit()
+
+        if event.kind in {"done", "cancelled", "error", "disconnected"}:
+            self._busy = False
+        self.transferChanged.emit()
+
+    def _drain_transfer_events(self):
+        while True:
+            try:
+                event = self._events.get_nowait()
+            except queue.Empty:
+                return
+            self._handle_transfer_event(event)
+
     @Slot()
     def drainEvents(self):
-        self._poll_ticks+=1
-        if self._poll_ticks>=20:
-            self._poll_ticks=0
-            ports=list(self._port_provider()); devices={p.device.casefold() for p in ports}
-            if self.connected and getattr(self._connection,"port","").casefold() not in devices:
-                lost=getattr(self._connection,"port","") or "the selected port"
-                self._connection.close(); self._connection_state="disconnected"; self._connection_status="Flipper disconnected"
-                self._notice("error","Flipper was disconnected.",f"USB port {lost} is no longer available.")
-                self.connectionChanged.emit(); self.transferChanged.emit()
-            if [p.device for p in ports] != [p.device for p in self._ports]:
-                self._ports=ports; self.portsChanged.emit()
-        try:
-            while True:
-                ok,port,payload=self._connection_results.get_nowait()
-                if ok:
-                    self._connection_state="connected"; self._connection_status=f"Connected · {port} · Companion {payload.version}"
-                    self._save(port=port); self._notice("success","Flipper connected and ready.")
-                    if self._setup_connect_pending:
-                        self._onboarding_ready=True; self._onboarding_state="Connected successfully. Setup is ready to complete."; self._setup_connect_pending=False; self.uiChanged.emit()
-                else:
-                    self._connection_state="error"; self._connection_status="Flipper connection failed"
-                    summary="The open Flipper app is incompatible." if isinstance(payload,IncompatibleCompanionError) else "Could not connect to Flipper."
-                    self._notice("error",summary,str(payload))
-                    if self._setup_connect_pending:
-                        self._onboarding_state="Connection failed. Check the cable and Companion, then retry."; self._setup_connect_pending=False; self.uiChanged.emit()
-                self.connectionChanged.emit(); self.transferChanged.emit()
-        except queue.Empty: pass
-        try:
-            while True:
-                event:AppEvent=self._events.get_nowait(); self._transfer_status=event.text; self._append_log(event.text)
-                if event.state:
-                    self._transfer_state=event.state.value
-                    self._progress=event.current/event.total if event.current is not None and event.total else STATE_PROGRESS.get(event.state,self._progress)
-                if event.kind=="done": self._record_success(); self._notice("success",event.text)
-                elif event.kind=="cancelled": self._pending_key=""; self._notice("info","Transfer cancelled.")
-                elif event.kind in {"error","disconnected"}:
-                    self._pending_key=""; self._notice("error","The transfer could not be completed.",event.text)
-                    if event.kind=="disconnected": self._connection_state="disconnected"; self._connection_status="Flipper disconnected"; self.connectionChanged.emit()
-                if event.kind in {"done","cancelled","error","disconnected"}: self._busy=False
-                self.transferChanged.emit()
-        except queue.Empty: pass
+        self._poll_ports()
+        self._drain_connection_results()
+        self._drain_transfer_events()
     @Slot()
     def shutdown(self): self._transfer.cancel(); self._connection.close()

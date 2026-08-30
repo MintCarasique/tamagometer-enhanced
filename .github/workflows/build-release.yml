@@ -192,3 +192,4 @@ jobs:
           fail_on_unmatched_files: true
           body_path: release/RELEASE_NOTES.md
           generate_release_notes: false
+          prerelease: ${{ contains(github.ref_name, '-rc.') }}

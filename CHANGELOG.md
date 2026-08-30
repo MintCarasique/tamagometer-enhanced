@@ -4,7 +4,7 @@ This file records user-visible changes in Tamagometer Enhanced. Release notes
 for a `vX.Y.Z` tag are taken from the matching `## [X.Y.Z]` section, so every
 release must have a completed entry here before the tag is pushed.
 
-## [3.0.0] - Unreleased
+## [3.0.0-rc.1] - 2026-08-30
 
 ### Changed
 
@@ -51,6 +51,11 @@ release must have a completed entry here before the tag is pushed.
 - Rebuilt Transfer as one mode-independent slot layout so preview, title,
   metadata, instructions, progress, status, and action controls keep identical
   geometry for Connection, Friends, and original V2/V3.
+- Split the main QML screen and transfer card into focused reusable components,
+  and separated serial polling, connection results, and transfer events in the
+  Qt view model without changing the protocol layer.
+- Removed brittle tests that asserted source-code structure or duplicated the
+  executable build checks already performed by the release workflow.
 
 ## [2.0.0] - 2026-08-29
 

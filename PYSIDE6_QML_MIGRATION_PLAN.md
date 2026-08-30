@@ -37,10 +37,11 @@ The reusable application and protocol layer consists mainly of:
 - `desktop/tamagometer_core.py` and `desktop/friends_core.py` — protocol data and
   encoding.
 
-There are currently more than 50 passing unit tests under `desktop/tests/`. Preserve these
-tests and add Qt-facing tests rather than replacing the existing protocol tests.
+The protocol, serial, catalog, settings, and Qt workflows have automated tests
+under `desktop/tests/`. Preserve behavior-focused coverage and avoid tests that
+only pin implementation details already exercised by the release build.
 
-## Implementation status — 3.0.0
+## Implementation status — 3.0.0-rc.1
 
 Work is active on `feature/pyside6-qml`. The first architectural slice now
 contains the Phase 0 guardrails and initial Phase 1 shell:
@@ -60,9 +61,9 @@ Phase 2 is now implemented in the Qt UI: Companion connection runs outside the
 GUI thread, `QTimer` drains connection and transfer queues on the GUI thread,
 and Connection 2024, Friends, and original V2/V3 expose start, progress,
 cancellation, completion, repeat, and disconnect/error states. These paths have
-automated simulated coverage and still require the planned physical hardware
-smoke test. The migration remains `3.0.0-dev` until that validation and the
-remaining responsive-design, accessibility, and release packaging work are complete.
+automated simulated coverage. The UI and packaging phases are complete for
+`3.0.0-rc.1`; the remaining gate for the final `3.0.0` release is the physical
+hardware and clean-machine checklist.
 
 Phase 3 is implemented: onboarding persists distinct skipped and completed
 states, closing it does not record either outcome, setup can be reopened from
@@ -91,6 +92,12 @@ CI lints QML, launches the packaged executable offscreen, enforces a size
 guardrail, and attaches third-party notices. Clean-machine and physical-device
 validation remains explicitly tracked in `desktop/HARDWARE_SMOKE_TEST.md`, so
 the Tk fallback is intentionally retained.
+
+Before the RC, the QML shell was decomposed into header, connection, catalog,
+legacy, transfer-summary, and transfer-action components. The Qt view model now
+keeps periodic port polling and queue-specific event handling separate from the
+timer slot. Redundant source-structure tests were removed; protocol and visible
+UI behavior coverage remains in place.
 
 ## UX defects the migration must address
 

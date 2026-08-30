@@ -57,36 +57,10 @@ ApplicationWindow {
             height: Math.max(implicitHeight, window.height)
             spacing: 0
 
-            Rectangle {
+            AppHeader {
                 Layout.fillWidth: true
-                implicitHeight: window.compactLayout ? 150 : 112
-                color: AppTheme.Theme.accent
-                ColumnLayout {
-                    anchors.fill: parent
-                    anchors.topMargin: 14; anchors.bottomMargin: 14
-                    anchors.leftMargin: 28; anchors.rightMargin: 28
-                    RowLayout {
-                        Layout.fillWidth: true
-                        Label {
-                            Layout.fillWidth: true
-                            text: "Tamagometer Enhanced\n<span style='font-size:12px'>Desktop " + window.viewModel.version + " · PySide6/QML preview</span>"
-                            textFormat: Text.RichText; color: "white"; font.pixelSize: window.compactLayout ? 20 : 24; font.weight: Font.DemiBold
-                        }
-                        StatusBadge { text: window.viewModel.connectionStatus; Accessible.name: "Connection status: " + text }
-                    }
-                    Flow {
-                        Layout.fillWidth: true; spacing: 8
-                        AppButton { objectName: "headerDiagnosticsButton"; iconName: "diagnostics"; text: "Diagnostics"; onClicked: window.viewModel.openDiagnostics(); Accessible.name: "Open diagnostics, Control D" }
-                        AppButton { objectName: "headerSettingsButton"; iconName: "settings"; text: "Settings"; onClicked: window.viewModel.openSettings(); Accessible.name: "Open settings, Control comma" }
-                        AppButton {
-                            objectName: "headerThemeButton"
-                            iconName: window.viewModel.darkTheme ? "sun" : "moon"
-                            text: window.viewModel.darkTheme ? "Light" : "Dark"
-                            onClicked: window.viewModel.toggleTheme()
-                            Accessible.name: "Toggle color theme"
-                        }
-                    }
-                }
+                viewModel: window.viewModel
+                compact: window.compactLayout
             }
 
             ColumnLayout {
@@ -103,30 +77,9 @@ ApplicationWindow {
                     currentMode: window.viewModel.modeKey
                     onModeSelected: key => window.viewModel.setMode(key)
                 }
-                ConnectionCard {
+                ConnectionPanel {
                     Layout.fillWidth: true
-                    RowLayout {
-                        Layout.fillWidth: true
-                        AppComboBox {
-                            objectName: "portSelector"
-                            Layout.fillWidth: true
-                            model: window.viewModel.ports
-                            textRole: "label"
-                            valueRole: "device"
-                            currentIndex: window.viewModel.selectedPortIndex
-                            enabled: window.viewModel.connectionState !== "connecting" && !window.viewModel.canCancelTransfer
-                            onActivated: window.viewModel.setSelectedPort(currentValue)
-                            Accessible.name: "Flipper serial port"
-                        }
-                        AppButton { objectName: "portRefreshButton"; iconName: "refresh"; text: "Refresh"; onClicked: window.viewModel.refreshPorts() }
-                        AppButton {
-                            iconName: "link"
-                            text: window.viewModel.connected ? "Disconnect" : (window.viewModel.connectionState === "connecting" ? "Connecting…" : "Connect")
-                            enabled: window.viewModel.connectionState !== "connecting" && !window.viewModel.canCancelTransfer
-                            onClicked: window.viewModel.toggleConnection()
-                            Accessible.name: text + " Flipper"
-                        }
-                    }
+                    viewModel: window.viewModel
                 }
                 InlineNotice {
                     Layout.fillWidth: true
@@ -147,75 +100,22 @@ ApplicationWindow {
                     columnSpacing: 16
                     rowSpacing: 16
 
-                    ConnectionCard {
+                    CatalogPanel {
                         objectName: "catalogCard"
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.preferredWidth: 700
                         Layout.minimumHeight: window.viewModel.legacyMode ? 260 : 620
                         visible: !window.viewModel.legacyMode
-
-                        Label {
-                            text: window.viewModel.pickerTitle
-                            color: AppTheme.Theme.text
-                            font.pixelSize: 20
-                            font.weight: Font.DemiBold
-                        }
-                        Label {
-                            Layout.fillWidth: true
-                            text: window.viewModel.pickerHint
-                            color: AppTheme.Theme.muted
-                            wrapMode: Text.WordWrap
-                        }
-                        RowLayout {
-                            Layout.fillWidth: true
-                            TextField {
-                                objectName: "catalogSearch"
-                                Layout.fillWidth: true
-                                implicitHeight: AppTheme.Theme.controlHeight
-                                placeholderText: "Search name, category, decimal or hex ID"
-                                text: window.viewModel.catalogModel.query
-                                onTextEdited: window.viewModel.catalogModel.query = text
-                                Accessible.name: "Search catalog"
-                            }
-                            AppComboBox {
-                                objectName: "categorySelector"
-                                Layout.preferredWidth: 190
-                                model: window.viewModel.categories
-                                onActivated: window.viewModel.catalogModel.category = currentText
-                                Accessible.name: "Catalog category"
-                            }
-                        }
-                        CatalogGrid {
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            catalogModel: window.viewModel.catalogModel
-                        }
+                        viewModel: window.viewModel
                     }
 
-                    ConnectionCard {
+                    LegacyPanel {
                         Layout.fillWidth: true
                         Layout.preferredWidth: 700
                         Layout.minimumHeight: 260
                         visible: window.viewModel.legacyMode
-                        Label {
-                            text: "Original Connection fallback"
-                            color: AppTheme.Theme.text
-                            font.pixelSize: 20
-                            font.weight: Font.DemiBold
-                        }
-                        Label {
-                            Layout.fillWidth: true
-                            text: "There is no selectable catalog in this mode. The Tamagotchi randomly chooses a game or gift after the fallback starts."
-                            color: AppTheme.Theme.muted
-                            wrapMode: Text.WordWrap
-                        }
-                        Label {
-                            Layout.fillWidth: true
-                            text: window.viewModel.instructions
-                            color: AppTheme.Theme.text
-                            wrapMode: Text.WordWrap
-                        }
+                        viewModel: window.viewModel
                     }
 
                     TransferPanel {

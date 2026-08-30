@@ -13,9 +13,10 @@ for this fork are hosted in this repository.
 Current stable release: **2.0.0** (2026-08-29). See the complete
 [`CHANGELOG.md`](CHANGELOG.md) for release history.
 
-Desktop **3.0.0** is currently under development on the
-`feature/pyside6-qml` branch. It introduces the new PySide6/Qt Quick interface
-in staged slices while retaining the Tkinter UI as a hardware-tested fallback.
+Desktop **3.0.0-rc.1** is the current release candidate. It introduces the new
+PySide6/Qt Quick interface while retaining the Tkinter UI as a hardware-tested
+source fallback. Release-candidate feedback should include an exported
+diagnostic report and the Tamagotchi/transfer mode used.
 
 ## Supported devices
 

@@ -15,10 +15,10 @@ Current stable Desktop version: **2.0.0**. Desktop and Companion builds should
 come from the same GitHub Release; see the parent
 [`CHANGELOG.md`](../CHANGELOG.md) for release history.
 
-The source tree currently identifies as **3.0.0-dev** while the presentation
-layer moves to PySide6 and Qt Quick. The Qt UI is the default source entry point
-and now supports the three hardware transfer workflows. Use `python app.py --tk`
-to compare against the retained Tkinter implementation during migration.
+The source tree currently identifies as **3.0.0-rc.1**. The PySide6/Qt Quick UI
+is the default source and packaged entry point and supports all three hardware
+transfer workflows. Use `python app.py --tk` to compare against the retained
+Tkinter implementation while the release candidate is validated.
 The Qt UI also includes repeatable first-run setup, an explained auto-connect
 preference, About information, and a diagnostics drawer with copy/export.
 Its responsive layout supports a 720×620 minimum window, preserves all content
@@ -26,11 +26,12 @@ through scrolling, and exposes keyboard focus and accessible control names.
 Useful shortcuts include `Ctrl+,` for Settings, `Ctrl+D` for Diagnostics,
 `Ctrl+R` for Repeat, and `Escape` to cancel an active transfer.
 
-Phase 5 uses a separate Qt-only release entry point, pinned PySide6 Essentials,
-and a reproducible PyInstaller command. The one-file executable is retained for
-GitHub Releases because it is substantially easier to distribute than the
-multi-thousand-file one-folder prototype. The Tk interface remains available
-from source until the packaged hardware checklist has passed.
+The release candidate uses a separate Qt-only release entry point, pinned
+PySide6 Essentials, and a reproducible PyInstaller command. The one-file
+executable is retained for GitHub Releases because it is substantially easier
+to distribute than the multi-thousand-file one-folder prototype. The Tk
+interface remains available from source until the packaged hardware checklist
+has passed.
 
 ## Desktop 2.0 UI
 
