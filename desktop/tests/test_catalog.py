@@ -2,12 +2,24 @@ from pathlib import Path
 import re
 import unittest
 
+from PIL import Image
+
 from tamagometer_desktop.assets import item_sprite_path
 from tamagometer_desktop.catalog import category_for, item_key, parse_item_key, sprite_filename
 from tamagometer_desktop.modes import CONNECTION_MODE, FRIENDS_MODE
 
 
 class CatalogPresentationTests(unittest.TestCase):
+    def test_catalog_sprites_are_real_decodable_png_files(self):
+        sprite_root = Path(__file__).resolve().parents[1] / "assets" / "item-sprites"
+        sprites = tuple(sprite_root.glob("*.png"))
+        self.assertGreaterEqual(len(sprites), 170)
+        for path in sprites:
+            with self.subTest(sprite=path.name):
+                self.assertEqual(path.read_bytes()[:8], b"\x89PNG\r\n\x1a\n")
+                with Image.open(path) as image:
+                    image.verify()
+
     def test_connection_catalog_has_stable_categories(self):
         self.assertEqual(category_for(CONNECTION_MODE, 0), "Food")
         self.assertEqual(category_for(CONNECTION_MODE, 36), "Snacks")

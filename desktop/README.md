@@ -11,16 +11,34 @@ Flipper Zero. The interface supports three distinct protocols:
 
 The app is unofficial and is not affiliated with Bandai.
 
-Current stable Desktop version: **2.0.0**. Desktop and Companion builds should
+Current stable Desktop version: **3.0.0**. Desktop and Companion builds should
 come from the same GitHub Release; see the parent
 [`CHANGELOG.md`](../CHANGELOG.md) for release history.
 
-## Desktop 2.0 UI
+The source tree identifies as **3.0.0**. The PySide6/Qt Quick UI is the default
+source and packaged entry point and supports all three hardware transfer
+workflows. Use `python app.py --tk` to compare against the retained Tkinter
+implementation.
+The Qt UI also includes repeatable first-run setup, an explained auto-connect
+preference, About information, and a diagnostics drawer with copy/export.
+Its responsive layout supports a 720×620 minimum window, preserves all content
+through scrolling, and exposes keyboard focus and accessible control names.
+Useful shortcuts include `Ctrl+,` for Settings, `Ctrl+D` for Diagnostics,
+`Ctrl+R` for Repeat, and `Escape` to cancel an active transfer.
 
-Version 2.0 adds first-run setup and automatic connection,
-an animated IR/LF placement guide, light and dark themes, inline notifications,
-real transfer progress, categories, favorites, recently sent items, **Repeat
-last transfer**, single-file diagnostic export, and original V2/V3 fallback.
+The release uses a separate Qt-only release entry point, pinned
+PySide6 Essentials, and a reproducible PyInstaller command. The one-file
+executable is retained for GitHub Releases because it is substantially easier
+to distribute than the multi-thousand-file one-folder prototype. The Tk
+interface remains available from source as a development fallback.
+
+## Desktop 3.0 UI
+
+Version 3.0 provides a unified PySide6/Qt Quick implementation of first-run
+setup, automatic connection, IR/LF placement guidance, light and dark themes,
+inline notifications, real transfer progress, categories, favorites, recently
+sent items, **Repeat last transfer**, single-file diagnostic export, and the
+original V2/V3 fallback.
 
 Connection item previews reuse the sprites already present in the upstream
 Tamagometer web interface. The upstream set provides a usable image for 171 of
@@ -50,7 +68,7 @@ The enhanced companion retains Connection IR support, so it replaces the
 Catalog version for both modes. Release FAPs are built with the latest official
 Flipper release SDK available at build time.
 
-Desktop 2.0 performs a capability handshake during connection and requires the
+Desktop 3.0 performs a capability handshake during connection and requires the
 matching Tamagometer Enhanced Companion 2.0.0 or newer. It automatically picks
 a likely Flipper COM port and reconnects when a previously connected Flipper
 returns after a USB interruption.
@@ -100,11 +118,30 @@ python -m pip install -r requirements.txt
 python app.py
 ```
 
+Run the retained Tkinter interface with:
+
+```powershell
+python app.py --tk
+```
+
 Run the protocol tests with:
 
 ```powershell
 python -m unittest discover -s tests -v
 ```
+
+Build the release executable from `desktop/` with:
+
+```powershell
+python tools/build_desktop.py --mode onefile --dist-dir ../release --clean
+```
+
+Use `--mode onedir` for an unpacked troubleshooting build. GitHub Actions
+starts the packaged executable in an offscreen smoke test and enforces a 220 MiB
+size guardrail. Before a 3.0 release, complete
+[`HARDWARE_SMOKE_TEST.md`](HARDWARE_SMOKE_TEST.md). Runtime license details are
+listed in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) and attached to
+each release.
 
 The Flipper source is in the repository's [`flipper/`](../flipper/) submodule and builds with
 [uFBT](https://github.com/flipperdevices/flipperzero-ufbt).
@@ -114,19 +151,26 @@ The Flipper source is in the repository's [`flipper/`](../flipper/) submodule an
 `app.py` is intentionally limited to application startup. The desktop package
 is split by responsibility:
 
+- `tamagometer_desktop/qt/` — PySide6 ViewModels and the Qt Quick/QML UI;
 - `tamagometer_desktop/window.py` — Tk window and UI event handling;
 - `tamagometer_desktop/theme.py` — colors and ttk styles;
 - `tamagometer_desktop/modes.py` — supported modes and item catalogs;
 - `tamagometer_desktop/settings.py` — configuration persistence;
-- `tamagometer_desktop/transfer.py` — background transfer orchestration.
+- `tamagometer_desktop/transfer.py` — background transfer orchestration;
 - `tamagometer_desktop/catalog.py` — categories, favorites keys, and sprite mapping;
 - `tamagometer_desktop/alignment.py` — animated IR/LF placement guide;
 - `tamagometer_desktop/onboarding.py` — first-run setup;
-- `tamagometer_desktop/diagnostics.py` — privacy-conscious report export.
+- `tamagometer_desktop/diagnostics.py` — privacy-conscious report export;
+- `qt_app.py` — Qt-only release entry point;
+- `tools/build_desktop.py` — shared local/CI packaging command.
 
 Protocol encoding and serial transport remain isolated in `tamagometer_core.py`,
 `friends_core.py`, `flipper_serial.py`, and the shared structured states in
 `transfer_status.py`.
+
+Catalog sprites are normalized to real PNG files for deterministic decoding in
+QML. Regenerate/repair them with `python tools/normalize_sprites.py`; the test
+suite validates both their signatures and Pillow decodeability.
 
 ## Protocol sources
 

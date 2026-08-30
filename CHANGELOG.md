@@ -4,6 +4,66 @@ This file records user-visible changes in Tamagometer Enhanced. Release notes
 for a `vX.Y.Z` tag are taken from the matching `## [X.Y.Z]` section, so every
 release must have a completed entry here before the tag is pushed.
 
+## [3.0.0] - 2026-08-30
+
+### Changed
+
+- Began the staged Desktop presentation migration from Tkinter/ttk to PySide6
+  and Qt Quick/QML while retaining the working protocol and transfer layers.
+- Added a responsive Qt shell and catalog model as an architectural preview;
+  the Tk interface remains available as a development fallback during parity
+  work.
+- Connected the Qt interface to the existing asynchronous Companion handshake
+  and transfer controller for Connection 2024, Friends, and original V2/V3,
+  including progress, cancellation, repeat-last transfer, and friendly errors.
+- Rebuilt first-run setup with explicit close, skip, retry, and successful
+  completion states plus a permanent Run setup again action.
+- Added Qt settings, safe auto-connect controls, About information, and a
+  privacy-conscious diagnostics drawer with Copy and Export.
+- Added compact, medium, and wide responsive layouts, keyboard navigation,
+  global shortcuts, accessible control metadata, visible focus, and a persisted
+  reduced-motion preference.
+- Added a Qt-only release entry point and reproducible one-file packaging that
+  omits the retained Tk UI and uses the smaller PySide6 Essentials runtime.
+- Added packaged-application startup and size checks to GitHub Actions, QML
+  linting, third-party notices, and a physical-device release checklist.
+
+### Fixed
+
+- Unknown standalone COM ports are no longer silently selected as a Flipper;
+  automatic selection now requires Flipper identity or a remembered port.
+- Normalized mislabeled catalog images to real PNG files and added signature
+  and decodeability regression tests.
+- Made Qt controls follow the in-app palette instead of inheriting a conflicting
+  Windows light/dark style, including readable button labels, dropdowns,
+  progress bars, and scrollbars in both themes.
+- Increased the default window to the wide layout and reduced unnecessary
+  catalog height so the main workflow no longer starts vertically scrolled.
+- Replaced font glyphs used as controls with consistently drawn UI icons and
+  reserved a dedicated catalog gutter so its scrollbar cannot cover favorite
+  actions.
+- Removed scrolling from Settings, corrected switch state styling, restored a
+  recognizable gear icon, and added visible dropdown borders in both themes.
+- Made the catalog and transfer cards fill the available row at equal heights
+  while keeping the final visible catalog row entirely inside its container.
+- Standardized buttons, text inputs, and dropdowns on the same 40-pixel control
+  height, including all three header actions.
+- Rebuilt Transfer as one mode-independent slot layout so preview, title,
+  metadata, instructions, progress, status, and action controls keep identical
+  geometry for Connection, Friends, and original V2/V3.
+- Made diagnostic export resolve local file URLs correctly on both Windows and
+  Linux build agents.
+- Split the main QML screen and transfer card into focused reusable components,
+  and separated serial polling, connection results, and transfer events in the
+  Qt view model without changing the protocol layer.
+- Removed brittle tests that asserted source-code structure or duplicated the
+  executable build checks already performed by the release workflow.
+
+### Verified
+
+- Promoted the release candidate after successful testing with the packaged
+  Desktop application, Flipper Companion, and physical Tamagotchi hardware.
+
 ## [2.0.0] - 2026-08-29
 
 ### Added

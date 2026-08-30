@@ -25,3 +25,7 @@ artifacts/*.exe
 artifacts/*.fap
 artifacts/.tamagometer-desktop.json
 test-build/
+package-evaluation/
+desktop/build/
+desktop/dist/
+desktop/*.spec
