@@ -77,8 +77,9 @@ ApplicationWindow {
                     Flow {
                         Layout.fillWidth: true; spacing: 8
                         AppButton { objectName: "headerDiagnosticsButton"; iconName: "diagnostics"; text: "Diagnostics"; onClicked: window.viewModel.openDiagnostics(); Accessible.name: "Open diagnostics, Control D" }
-                        AppButton { iconName: "settings"; text: "Settings"; onClicked: window.viewModel.openSettings(); Accessible.name: "Open settings, Control comma" }
+                        AppButton { objectName: "headerSettingsButton"; iconName: "settings"; text: "Settings"; onClicked: window.viewModel.openSettings(); Accessible.name: "Open settings, Control comma" }
                         AppButton {
+                            objectName: "headerThemeButton"
                             iconName: window.viewModel.darkTheme ? "sun" : "moon"
                             text: window.viewModel.darkTheme ? "Light" : "Dark"
                             onClicked: window.viewModel.toggleTheme()
@@ -117,7 +118,7 @@ ApplicationWindow {
                             onActivated: window.viewModel.setSelectedPort(currentValue)
                             Accessible.name: "Flipper serial port"
                         }
-                        AppButton { iconName: "refresh"; text: "Refresh"; onClicked: window.viewModel.refreshPorts() }
+                        AppButton { objectName: "portRefreshButton"; iconName: "refresh"; text: "Refresh"; onClicked: window.viewModel.refreshPorts() }
                         AppButton {
                             iconName: "link"
                             text: window.viewModel.connected ? "Disconnect" : (window.viewModel.connectionState === "connecting" ? "Connecting…" : "Connect")
@@ -171,12 +172,14 @@ ApplicationWindow {
                             TextField {
                                 objectName: "catalogSearch"
                                 Layout.fillWidth: true
+                                implicitHeight: AppTheme.Theme.controlHeight
                                 placeholderText: "Search name, category, decimal or hex ID"
                                 text: window.viewModel.catalogModel.query
                                 onTextEdited: window.viewModel.catalogModel.query = text
                                 Accessible.name: "Search catalog"
                             }
                             AppComboBox {
+                                objectName: "categorySelector"
                                 Layout.preferredWidth: 190
                                 model: window.viewModel.categories
                                 onActivated: window.viewModel.catalogModel.category = currentText

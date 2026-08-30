@@ -4,6 +4,7 @@ import "../theme" as AppTheme
 
 ComboBox {
     id: control
+    implicitHeight: AppTheme.Theme.controlHeight
     readonly property color resolvedBaseColor: AppTheme.Theme.surfaceAlt
     readonly property color resolvedIndicatorColor: enabled
         ? AppTheme.Theme.text

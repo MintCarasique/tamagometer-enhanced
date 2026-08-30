@@ -46,6 +46,8 @@ release must have a completed entry here before the tag is pushed.
   recognizable gear icon, and added visible dropdown borders in both themes.
 - Made the catalog and transfer cards fill the available row at equal heights
   while keeping the final visible catalog row entirely inside its container.
+- Standardized buttons, text inputs, and dropdowns on the same 40-pixel control
+  height, including all three header actions.
 
 ## [2.0.0] - 2026-08-29
 

@@ -13,7 +13,7 @@ Button {
         : ((primary || checked) ? "#FFFFFF" : AppTheme.Theme.text)
 
     implicitWidth: iconOnly ? 36 : Math.max(80, buttonContent.implicitWidth + leftPadding + rightPadding)
-    implicitHeight: 36
+    implicitHeight: AppTheme.Theme.controlHeight
     leftPadding: 14
     rightPadding: 14
     opacity: 1

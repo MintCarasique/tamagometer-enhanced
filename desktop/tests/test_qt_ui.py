@@ -98,6 +98,15 @@ class QmlSmokeTests(unittest.TestCase):
                 float(scroll.property("contentHeight")),
                 float(scroll.property("availableHeight")) + 1,
             )
+            controls = [
+                window.findChild(QObject, name)
+                for name in (
+                    "headerDiagnosticsButton", "headerSettingsButton", "headerThemeButton",
+                    "portSelector", "portRefreshButton", "catalogSearch", "categorySelector",
+                )
+            ]
+            self.assertTrue(all(control is not None for control in controls))
+            self.assertEqual({round(control.height()) for control in controls}, {40})
             engine.clearComponentCache()
 
     def test_interactive_icons_do_not_use_font_glyphs(self):

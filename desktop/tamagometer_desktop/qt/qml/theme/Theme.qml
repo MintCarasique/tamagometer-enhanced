@@ -2,6 +2,7 @@ pragma Singleton
 import QtQuick
 
 QtObject {
+    readonly property int controlHeight: 40
     property bool dark: false
     property bool reducedMotion: false
     readonly property color background: dark ? "#0B1020" : "#F3F5FA"
