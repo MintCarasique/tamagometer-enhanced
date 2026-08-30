@@ -152,7 +152,7 @@ python app.py
 Run its protocol tests with:
 
 ```powershell
-.\tools\check.ps1
+..\tools\check.ps1
 ```
 
 The helper keeps successful output compact and prints detailed test or lint
