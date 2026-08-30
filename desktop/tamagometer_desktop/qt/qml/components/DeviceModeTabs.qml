@@ -1,7 +1,5 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import QtQuick.Controls
-import "../theme" as AppTheme
 
 Flow {
     id: root
@@ -12,14 +10,12 @@ Flow {
 
     Repeater {
         model: parent.modes
-        delegate: Button {
+        delegate: AppButton {
             required property var modelData
             text: modelData.label
             checkable: true
             checked: modelData.key === root.currentMode
             onClicked: root.modeSelected(modelData.key)
-            palette.button: checked ? AppTheme.Theme.accent : AppTheme.Theme.surface
-            palette.buttonText: checked ? "white" : AppTheme.Theme.text
             Accessible.name: text
             Accessible.description: checked ? "Current device mode" : "Switch device mode"
         }

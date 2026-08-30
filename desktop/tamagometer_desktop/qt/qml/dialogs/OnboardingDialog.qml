@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import "../theme" as AppTheme
+import "../components"
 
 Popup {
     id: root
@@ -36,10 +37,11 @@ Popup {
         Item { Layout.fillHeight: true }
         RowLayout {
             Layout.fillWidth: true
-            Button { text: "Skip"; onClicked: root.viewModel.skipOnboarding() }
+            AppButton { text: "Skip"; onClicked: root.viewModel.skipOnboarding() }
             Item { Layout.fillWidth: true }
-            Button { text: "Back"; enabled: root.viewModel.onboardingStep > 0 && !root.viewModel.onboardingReady; onClicked: root.viewModel.onboardingBack() }
-            Button {
+            AppButton { text: "Back"; enabled: root.viewModel.onboardingStep > 0 && !root.viewModel.onboardingReady; onClicked: root.viewModel.onboardingBack() }
+            AppButton {
+                primary: true
                 text: root.viewModel.onboardingReady ? "Finish setup" : (root.viewModel.onboardingStep === 2 ? "Find Flipper" : "Continue")
                 onClicked: root.viewModel.onboardingNext()
             }

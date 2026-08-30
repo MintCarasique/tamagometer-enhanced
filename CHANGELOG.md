@@ -34,6 +34,11 @@ release must have a completed entry here before the tag is pushed.
   automatic selection now requires Flipper identity or a remembered port.
 - Normalized mislabeled catalog images to real PNG files and added signature
   and decodeability regression tests.
+- Made Qt controls follow the in-app palette instead of inheriting a conflicting
+  Windows light/dark style, including readable button labels, dropdowns,
+  progress bars, and scrollbars in both themes.
+- Increased the default window to the wide layout and reduced unnecessary
+  catalog height so the main workflow no longer starts vertically scrolled.
 
 ## [2.0.0] - 2026-08-29
 

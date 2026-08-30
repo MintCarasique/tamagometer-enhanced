@@ -8,6 +8,7 @@ import sys
 from PySide6.QtCore import QCoreApplication, Qt, QUrl
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
+from PySide6.QtQuickControls2 import QQuickStyle
 
 from .app_view_model import AppViewModel
 
@@ -18,6 +19,9 @@ def qml_root() -> Path:
 
 def run(argv: list[str] | None = None) -> int:
     QCoreApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+    # Avoid inheriting a partly dark Windows style when the in-app theme is
+    # light. The Basic style is fully paletteable and consistent in packages.
+    QQuickStyle.setStyle("Basic")
     app = QGuiApplication(argv or sys.argv)
     app.setApplicationName("Tamagometer Enhanced")
     app.setOrganizationName("Tamagometer Enhanced")

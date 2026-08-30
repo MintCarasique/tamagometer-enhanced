@@ -55,8 +55,24 @@ ConnectionCard {
         wrapMode: Text.WordWrap
     }
     ProgressBar {
+        id: progress
         Layout.fillWidth: true
         value: root.viewModel.transferProgress
+        background: Rectangle {
+            implicitHeight: 8
+            radius: 4
+            color: AppTheme.Theme.disabledSurface
+            border.color: AppTheme.Theme.border
+        }
+        contentItem: Item {
+            implicitHeight: 8
+            Rectangle {
+                width: progress.visualPosition * parent.width
+                height: parent.height
+                radius: 4
+                color: AppTheme.Theme.accent
+            }
+        }
     }
     Label {
         Layout.fillWidth: true
@@ -64,9 +80,10 @@ ConnectionCard {
         color: AppTheme.Theme.accent
         wrapMode: Text.WordWrap
     }
-    Button {
+    AppButton {
         objectName: "primaryTransferAction"
         Layout.fillWidth: true
+        primary: true
         text: root.viewModel.primaryActionLabel
         enabled: root.viewModel.canStartTransfer
         onClicked: root.viewModel.startTransfer()
@@ -74,13 +91,13 @@ ConnectionCard {
     }
     RowLayout {
         Layout.fillWidth: true
-        Button {
+        AppButton {
             Layout.fillWidth: true
             text: "Repeat"
             enabled: root.viewModel.canRepeatTransfer
             onClicked: root.viewModel.repeatLastTransfer()
         }
-        Button {
+        AppButton {
             Layout.fillWidth: true
             text: "Cancel"
             enabled: root.viewModel.canCancelTransfer

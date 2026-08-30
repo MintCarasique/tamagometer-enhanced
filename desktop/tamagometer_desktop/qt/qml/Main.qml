@@ -12,13 +12,29 @@ ApplicationWindow {
     // qmllint disable unqualified
     property var viewModel: appViewModel
     // qmllint enable unqualified
-    width: 1120
-    height: 800
+    width: 1280
+    height: 940
     minimumWidth: 720
     minimumHeight: 620
     visible: true
     title: "Tamagometer Enhanced " + window.viewModel.version
     color: AppTheme.Theme.background
+    palette.window: AppTheme.Theme.background
+    palette.windowText: AppTheme.Theme.text
+    palette.base: AppTheme.Theme.surfaceAlt
+    palette.alternateBase: AppTheme.Theme.surface
+    palette.text: AppTheme.Theme.text
+    palette.button: AppTheme.Theme.control
+    palette.buttonText: AppTheme.Theme.text
+    palette.highlight: AppTheme.Theme.accent
+    palette.highlightedText: "#FFFFFF"
+    palette.placeholderText: AppTheme.Theme.muted
+    palette.toolTipBase: AppTheme.Theme.surface
+    palette.toolTipText: AppTheme.Theme.text
+    palette.link: AppTheme.Theme.accent
+    palette.disabled.button: AppTheme.Theme.disabledSurface
+    palette.disabled.buttonText: AppTheme.Theme.disabledText
+    palette.disabled.text: AppTheme.Theme.disabledText
     readonly property string layoutClass: width < 820 ? "compact" : (width < 1180 ? "medium" : "wide")
     readonly property bool compactLayout: layoutClass === "compact"
 
@@ -30,9 +46,11 @@ ApplicationWindow {
     Shortcut { sequence: "Escape"; enabled: window.viewModel.canCancelTransfer; onActivated: window.viewModel.cancelTransfer() }
 
     ScrollView {
+        objectName: "mainScrollView"
         anchors.fill: parent
         contentWidth: availableWidth
         ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+        ScrollBar.vertical: AppScrollBar { objectName: "mainVerticalScrollBar" }
 
         ColumnLayout {
             width: parent.width
@@ -57,9 +75,9 @@ ApplicationWindow {
                     }
                     Flow {
                         Layout.fillWidth: true; spacing: 8
-                        Button { text: "Diagnostics"; onClicked: window.viewModel.openDiagnostics(); Accessible.name: "Open diagnostics, Control D" }
-                        Button { text: "Settings"; onClicked: window.viewModel.openSettings(); Accessible.name: "Open settings, Control comma" }
-                        Button {
+                        AppButton { objectName: "headerDiagnosticsButton"; text: "Diagnostics"; onClicked: window.viewModel.openDiagnostics(); Accessible.name: "Open diagnostics, Control D" }
+                        AppButton { text: "Settings"; onClicked: window.viewModel.openSettings(); Accessible.name: "Open settings, Control comma" }
+                        AppButton {
                             text: window.viewModel.darkTheme ? "☀ Light" : "☾ Dark"
                             onClicked: window.viewModel.toggleTheme()
                             Accessible.name: "Toggle color theme"
@@ -85,7 +103,7 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     RowLayout {
                         Layout.fillWidth: true
-                        ComboBox {
+                        AppComboBox {
                             objectName: "portSelector"
                             Layout.fillWidth: true
                             model: window.viewModel.ports
@@ -96,8 +114,8 @@ ApplicationWindow {
                             onActivated: window.viewModel.setSelectedPort(currentValue)
                             Accessible.name: "Flipper serial port"
                         }
-                        Button { text: "Refresh"; onClicked: window.viewModel.refreshPorts() }
-                        Button {
+                        AppButton { text: "Refresh"; onClicked: window.viewModel.refreshPorts() }
+                        AppButton {
                             text: window.viewModel.connected ? "Disconnect" : (window.viewModel.connectionState === "connecting" ? "Connecting…" : "Connect")
                             enabled: window.viewModel.connectionState !== "connecting" && !window.viewModel.canCancelTransfer
                             onClicked: window.viewModel.toggleConnection()
@@ -110,7 +128,7 @@ ApplicationWindow {
                     visible: window.viewModel.noticeSummary.length > 0
                     text: window.viewModel.noticeSummary
                 }
-                Button {
+                AppButton {
                     visible: window.viewModel.noticeDetail.length > 0
                     text: "Show technical details"
                     onClicked: window.viewModel.openDiagnostics()
@@ -125,7 +143,7 @@ ApplicationWindow {
                     ConnectionCard {
                         Layout.fillWidth: true
                         Layout.preferredWidth: 700
-                        Layout.minimumHeight: window.viewModel.legacyMode ? 260 : 610
+                        Layout.minimumHeight: window.viewModel.legacyMode ? 260 : 570
                         visible: !window.viewModel.legacyMode
 
                         Label {
@@ -150,7 +168,7 @@ ApplicationWindow {
                                 onTextEdited: window.viewModel.catalogModel.query = text
                                 Accessible.name: "Search catalog"
                             }
-                            ComboBox {
+                            AppComboBox {
                                 Layout.preferredWidth: 190
                                 model: window.viewModel.categories
                                 onActivated: window.viewModel.catalogModel.category = currentText

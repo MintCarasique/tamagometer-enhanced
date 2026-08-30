@@ -5,6 +5,7 @@ import unittest
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 os.environ.setdefault("QT_QUICK_BACKEND", "software")
+os.environ.setdefault("QT_QUICK_CONTROLS_STYLE", "Basic")
 
 from PySide6.QtCore import QObject, QUrl
 from PySide6.QtGui import QGuiApplication
@@ -82,7 +83,35 @@ class QmlSmokeTests(unittest.TestCase):
 
     def test_main_qml_loads_headlessly(self):
         with tempfile.TemporaryDirectory() as temporary:
-            engine, _view_model, _window = self.load_window(temporary)
+            engine, _view_model, window = self.load_window(temporary)
+            APP.processEvents()
+            self.assertEqual(window.width(), 1280)
+            self.assertEqual(window.height(), 940)
+            scroll = window.findChild(QObject, "mainScrollView")
+            self.assertIsNotNone(scroll)
+            self.assertLessEqual(
+                float(scroll.property("contentHeight")),
+                float(scroll.property("availableHeight")) + 1,
+            )
+            engine.clearComponentCache()
+
+    def test_control_palette_follows_the_app_theme(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            engine, view_model, window = self.load_window(temporary)
+            APP.processEvents()
+            header_button = window.findChild(QObject, "headerDiagnosticsButton")
+            primary_button = window.findChild(QObject, "primaryTransferAction")
+            port_selector = window.findChild(QObject, "portSelector")
+            self.assertEqual(header_button.property("resolvedTextColor").name(), "#182230")
+            self.assertEqual(primary_button.property("resolvedTextColor").name(), "#667085")
+            self.assertEqual(port_selector.property("resolvedBaseColor").name(), "#f9fafb")
+            self.assertEqual(port_selector.property("resolvedIndicatorColor").name(), "#182230")
+
+            view_model.toggleTheme(); APP.processEvents()
+            self.assertEqual(header_button.property("resolvedTextColor").name(), "#f2f4f7")
+            self.assertEqual(primary_button.property("resolvedTextColor").name(), "#aab2c0")
+            self.assertEqual(port_selector.property("resolvedBaseColor").name(), "#1d2435")
+            self.assertEqual(port_selector.property("resolvedIndicatorColor").name(), "#f2f4f7")
             engine.clearComponentCache()
 
     def test_responsive_breakpoints_preserve_selection_and_theme(self):

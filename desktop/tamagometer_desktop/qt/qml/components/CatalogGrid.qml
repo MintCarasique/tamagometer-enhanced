@@ -6,7 +6,7 @@ Item {
     id: root
     objectName: "catalogGrid"
     required property var catalogModel
-    implicitHeight: 450
+    implicitHeight: 400
 
     GridView {
         id: grid
@@ -21,7 +21,7 @@ Item {
         keyNavigationEnabled: true
         Accessible.role: Accessible.List
         Accessible.name: "Gift and reward catalog"
-        ScrollBar.vertical: ScrollBar {}
+        ScrollBar.vertical: AppScrollBar {}
         delegate: CatalogItem {
             required property int index
             required property string name
