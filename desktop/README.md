@@ -11,11 +11,11 @@ Flipper Zero. The interface supports three distinct protocols:
 
 The app is unofficial and is not affiliated with Bandai.
 
-Current stable Desktop version: **3.0.0**. Desktop and Companion builds should
+Current stable Desktop version: **3.1.0**. Desktop and Companion builds should
 come from the same GitHub Release; see the parent
 [`CHANGELOG.md`](../CHANGELOG.md) for release history.
 
-The source tree identifies as **3.0.0**. The PySide6/Qt Quick UI is the default
+The source tree identifies as **3.1.0**. The PySide6/Qt Quick UI is the default
 source and packaged entry point and supports all three hardware transfer
 workflows. Use `python app.py --tk` to compare against the retained Tkinter
 implementation.
@@ -32,13 +32,14 @@ executable is retained for GitHub Releases because it is substantially easier
 to distribute than the multi-thousand-file one-folder prototype. The Tk
 interface remains available from source as a development fallback.
 
-## Desktop 3.0 UI
+## Desktop 3.1 UI
 
-Version 3.0 provides a unified PySide6/Qt Quick implementation of first-run
+Version 3.1 uses the unified PySide6/Qt Quick implementation of first-run
 setup, automatic connection, IR/LF placement guidance, light and dark themes,
 inline notifications, real transfer progress, categories, favorites, recently
 sent items, **Repeat last transfer**, single-file diagnostic export, and the
-original V2/V3 fallback.
+original V2/V3 fallback. It also simplifies connection-state handling and
+catalog role mapping without changing the transfer protocols.
 
 Connection item previews reuse the sprites already present in the upstream
 Tamagometer web interface. The upstream set provides a usable image for 171 of
@@ -68,7 +69,7 @@ The enhanced companion retains Connection IR support, so it replaces the
 Catalog version for both modes. Release FAPs are built with the latest official
 Flipper release SDK available at build time.
 
-Desktop 3.0 performs a capability handshake during connection and requires the
+Desktop 3.1 performs a capability handshake during connection and requires the
 matching Tamagometer Enhanced Companion 2.0.0 or newer. It automatically picks
 a likely Flipper COM port and reconnects when a previously connected Flipper
 returns after a USB interruption.

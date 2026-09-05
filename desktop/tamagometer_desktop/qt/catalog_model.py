@@ -2,7 +2,16 @@
 
 from __future__ import annotations
 
-from PySide6.QtCore import QAbstractListModel, QByteArray, QModelIndex, Property, Qt, QUrl, Signal, Slot
+from PySide6.QtCore import (
+    QAbstractListModel,
+    QByteArray,
+    QModelIndex,
+    Property,
+    Qt,
+    QUrl,
+    Signal,
+    Slot,
+)
 
 from ..assets import item_sprite_path
 from ..catalog import (
@@ -26,6 +35,17 @@ class CatalogModel(QAbstractListModel):
     SpriteUrlRole = Qt.UserRole + 7
     KeyRole = Qt.UserRole + 8
 
+    ROLE_FIELDS = {
+        ItemIdRole: "itemId",
+        DisplayIdRole: "displayId",
+        NameRole: "name",
+        CategoryRole: "category",
+        FavoriteRole: "favorite",
+        RecentRole: "recent",
+        SpriteUrlRole: "spriteUrl",
+        KeyRole: "itemKey",
+    }
+
     countChanged = Signal()
     queryChanged = Signal()
     categoryChanged = Signal()
@@ -45,14 +65,8 @@ class CatalogModel(QAbstractListModel):
 
     def roleNames(self):
         return {
-            self.ItemIdRole: QByteArray(b"itemId"),
-            self.DisplayIdRole: QByteArray(b"displayId"),
-            self.NameRole: QByteArray(b"name"),
-            self.CategoryRole: QByteArray(b"category"),
-            self.FavoriteRole: QByteArray(b"favorite"),
-            self.RecentRole: QByteArray(b"recent"),
-            self.SpriteUrlRole: QByteArray(b"spriteUrl"),
-            self.KeyRole: QByteArray(b"itemKey"),
+            role: QByteArray(field.encode("ascii"))
+            for role, field in self.ROLE_FIELDS.items()
         }
 
     def rowCount(self, parent=QModelIndex()):
@@ -62,18 +76,7 @@ class CatalogModel(QAbstractListModel):
         if not index.isValid() or not 0 <= index.row() < len(self._rows):
             return None
         row = self._rows[index.row()]
-        fields = {
-            Qt.DisplayRole: "name",
-            self.ItemIdRole: "itemId",
-            self.DisplayIdRole: "displayId",
-            self.NameRole: "name",
-            self.CategoryRole: "category",
-            self.FavoriteRole: "favorite",
-            self.RecentRole: "recent",
-            self.SpriteUrlRole: "spriteUrl",
-            self.KeyRole: "itemKey",
-        }
-        field = fields.get(role)
+        field = "name" if role == Qt.DisplayRole else self.ROLE_FIELDS.get(role)
         return row.get(field) if field else None
 
     def _display_id(self, item_id: int) -> str:
@@ -100,10 +103,16 @@ class CatalogModel(QAbstractListModel):
         if not query:
             return True
         item_id = row["itemId"]
-        searchable = " ".join((
-            row["name"], row["category"], str(item_id), f"{item_id:03d}",
-            f"0x{item_id:02x}", f"{item_id:02x}",
-        )).casefold()
+        searchable = " ".join(
+            (
+                row["name"],
+                row["category"],
+                str(item_id),
+                f"{item_id:03d}",
+                f"0x{item_id:02x}",
+                f"{item_id:02x}",
+            )
+        ).casefold()
         return query in searchable
 
     def _rebuild(self) -> None:
@@ -111,7 +120,11 @@ class CatalogModel(QAbstractListModel):
         candidates = [] if self._mode.key == "legacy" else list(self._mode.items)
         recent_order = {key: index for index, key in enumerate(self._recent)}
         if self._category == RECENT_CATEGORY:
-            candidates.sort(key=lambda item: recent_order.get(item_key(self._mode.key, item[0]), 9999))
+            candidates.sort(
+                key=lambda item: recent_order.get(
+                    item_key(self._mode.key, item[0]), 9999
+                )
+            )
         rows = []
         for item_id, name in candidates:
             row = self._make_row(item_id, name)
@@ -119,7 +132,11 @@ class CatalogModel(QAbstractListModel):
                 continue
             if self._category == RECENT_CATEGORY and not row["recent"]:
                 continue
-            if self._category not in {ALL_CATEGORY, FAVORITES_CATEGORY, RECENT_CATEGORY} and row["category"] != self._category:
+            if (
+                self._category
+                not in {ALL_CATEGORY, FAVORITES_CATEGORY, RECENT_CATEGORY}
+                and row["category"] != self._category
+            ):
                 continue
             if self._matches_query(row):
                 rows.append(row)
@@ -175,7 +192,14 @@ class CatalogModel(QAbstractListModel):
 
     @Property(int, notify=selectionChanged)
     def selectedIndex(self):
-        return next((index for index, row in enumerate(self._rows) if row["itemKey"] == self._selected_key), -1)
+        return next(
+            (
+                index
+                for index, row in enumerate(self._rows)
+                if row["itemKey"] == self._selected_key
+            ),
+            -1,
+        )
 
     def _selected_value(self, field: str, default=""):
         index = self.selectedIndex
@@ -184,14 +208,6 @@ class CatalogModel(QAbstractListModel):
     @Property(str, notify=selectionChanged)
     def selectedName(self):
         return self._selected_value("name")
-
-    @Property(int, notify=selectionChanged)
-    def selectedItemId(self):
-        return int(self._selected_value("itemId", -1))
-
-    @Property(str, notify=selectionChanged)
-    def selectedItemKey(self):
-        return self._selected_value("itemKey")
 
     @Property(int, notify=selectionChanged)
     def selectedItemId(self):
@@ -223,7 +239,9 @@ class CatalogModel(QAbstractListModel):
             self.selectionChanged.emit()
 
     def select_key(self, key: str) -> bool:
-        index = next((i for i, row in enumerate(self._rows) if row["itemKey"] == key), -1)
+        index = next(
+            (i for i, row in enumerate(self._rows) if row["itemKey"] == key), -1
+        )
         if index < 0:
             return False
         self.select(index)

@@ -8,7 +8,7 @@ versions used for an official build are pinned in `requirements.txt` and
 ## Qt for Python / PySide6 Essentials and Shiboken6
 
 - Project: Qt for Python
-- Version used by Desktop 3.0.0 builds: 6.11.2
+- Version used by Desktop 3.1.0 builds: 6.11.2
 - License choice used for this open-source distribution: GNU Lesser General
   Public License v3.0
 - Homepage and source: <https://code.qt.io/cgit/pyside/pyside-setup.git/>

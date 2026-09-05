@@ -4,6 +4,27 @@ This file records user-visible changes in Tamagometer Enhanced. Release notes
 for a `vX.Y.Z` tag are taken from the matching `## [X.Y.Z]` section, so every
 release must have a completed entry here before the tag is pushed.
 
+## [3.1.0] - 2026-09-05
+
+### Changed
+
+- Simplified Qt connection-state transitions and catalog role mapping, and
+  expanded dense view-model methods for easier maintenance.
+- Removed duplicate Qt catalog properties while preserving the existing QML
+  interface and saved user data.
+- Simplified Flipper transfer and sniffer worker shutdown through one shared
+  lifecycle path.
+- Split Flipper transfer-result rendering into focused helpers and made scene
+  callback mappings explicit.
+- Simplified standalone item-detail formatting without changing Connection
+  2024, Friends, or original V2/V3 protocol behavior.
+
+### Verified
+
+- Passed all 53 Desktop tests, QML linting, and Python bytecode compilation.
+- Built the Companion FAP successfully for Flipper target 7 and application
+  API 87.1.
+
 ## [3.0.0] - 2026-08-30
 
 ### Changed

@@ -10,12 +10,12 @@ MIT-licensed Tamagometer research project. Upstream links are retained in the
 Credits section for attribution; downloads, support, and current development
 for this fork are hosted in this repository.
 
-Current stable release: **3.0.0** (2026-08-30). See the complete
+Current stable release: **3.1.0** (2026-09-05). See the complete
 [`CHANGELOG.md`](CHANGELOG.md) for release history.
 
-Desktop **3.0.0** introduces the new PySide6/Qt Quick interface while retaining
-the Tkinter UI as a source fallback. The packaged Qt application has passed the
-automated release pipeline and physical-hardware validation.
+Desktop **3.1.0** refines the PySide6/Qt Quick implementation and the Flipper
+standalone application without changing their hardware protocols. The Tkinter
+UI remains available as a source fallback.
 
 ## Supported devices
 
@@ -29,12 +29,13 @@ automated release pipeline and physical-hardware validation.
 Tamagotchi Friends support currently covers the receiver side of **BFF BUMP**.
 Exchange, Visit Bump, Mail, and Special modes are not implemented.
 
-## Version 3.0
+## Version 3.1
 
-Version 3.0 replaces the Desktop presentation layer with a responsive
-PySide6/Qt Quick interface. It keeps the existing protocol implementation while
-unifying the three transfer modes, controls, themes, setup, diagnostics, and
-release packaging.
+Version 3.1 keeps the responsive PySide6/Qt Quick interface introduced in 3.0
+and simplifies its connection state and catalog internals. The Flipper app now
+uses clearer scene callback mappings and shared worker cleanup paths. These are
+maintenance changes: Connection 2024, Friends, and original V2/V3 behavior is
+unchanged.
 
 The Flipper application remains fully hybrid: Connection 2024 gifts, Friends
 rewards, and the original V2/V3 fallback can be started directly on the
@@ -54,7 +55,7 @@ The V2 `Version 1` / V3 `Others` fallback is hardware-verified but remains an
 experimental protocol: the physical Tamagotchi randomly chooses a game or
 gift, and games currently use the captured responder-win result.
 
-Desktop 3.0 requires Tamagometer Enhanced Companion 2.0.0 or newer. Install
+Desktop 3.1 requires Tamagometer Enhanced Companion 2.0.0 or newer. Install
 the `.exe` and `.fap` from the same release. Friends jewelry names remain
 numbered until a complete ID-to-name mapping can be verified.
 
@@ -165,7 +166,7 @@ Create the same Qt-only standalone Windows build used by GitHub Actions:
 python tools/build_desktop.py --mode onefile --dist-dir ../release --clean
 ```
 
-For Desktop 3.0, `python app.py` starts the Qt interface and
+For Desktop 3.x, `python app.py` starts the Qt interface and
 `python app.py --tk` starts the retained Tkinter interface.
 Release packaging intentionally starts from `qt_app.py`, so Tcl/Tk is not
 included in the distributed executable. See
