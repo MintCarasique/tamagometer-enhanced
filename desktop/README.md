@@ -11,11 +11,11 @@ Flipper Zero. The interface supports three distinct protocols:
 
 The app is unofficial and is not affiliated with Bandai.
 
-Current stable Desktop version: **3.2.0**. Desktop and Companion builds should
+Current stable Desktop version: **3.2.1**. Desktop and Companion builds should
 come from the same GitHub Release; see the parent
 [`CHANGELOG.md`](../CHANGELOG.md) for release history.
 
-The source tree identifies as **3.2.0**. The PySide6/Qt Quick UI is the default
+The source tree identifies as **3.2.1**. The PySide6/Qt Quick UI is the default
 source and packaged entry point and supports all three hardware transfer
 workflows. Use `python app.py --tk` to compare against the retained Tkinter
 implementation.

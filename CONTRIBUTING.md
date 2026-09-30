@@ -72,7 +72,7 @@ The repository includes compact PowerShell helpers for the routine workflow:
 .\tools\squash-feature.ps1 -Branch feature/example -Message "Add example feature"
 
 # Validate metadata, create the tag, wait for Actions, and verify all assets.
-.\tools\release.ps1 -Version 3.2.0
+.\tools\release.ps1 -Version 3.2.1
 ```
 
 Use `tools/commit.ps1` when a checked commit is useful without a merge. It

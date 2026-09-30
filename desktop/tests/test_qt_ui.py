@@ -213,6 +213,16 @@ class QmlSmokeTests(unittest.TestCase):
             geometries = {}
             for mode in ("connection", "friends", "legacy"):
                 view_model.setMode(mode); APP.processEvents()
+                guide = window.findChild(QObject, "transferDeviceGuide")
+                self.assertIsNotNone(guide)
+                self.assertEqual(guide.property("friends"), mode == "friends")
+                tama = guide.findChild(QObject, "guideTamagotchi")
+                flipper = guide.findChild(QObject, "guideFlipper")
+                self.assertIsNotNone(tama)
+                self.assertIsNotNone(flipper)
+                self.assertEqual(tama.property("back"), mode == "friends")
+                self.assertEqual(flipper.property("back"), mode == "friends")
+                self.assertGreater(guide.width(), 0)
                 geometries[mode] = {
                     name: (round(item.y()), round(item.height()))
                     for name, item in slots.items()

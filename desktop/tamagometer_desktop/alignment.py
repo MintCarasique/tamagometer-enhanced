@@ -6,6 +6,7 @@ import tkinter as tk
 from tkinter import ttk
 
 from transfer_status import TransferState
+from .device_art import draw_flipper, draw_tamagotchi
 
 
 class AlignmentGuide(ttk.Frame):
@@ -50,9 +51,7 @@ class AlignmentGuide(ttk.Frame):
         canvas = self.canvas
         canvas.delete("all")
         width = max(canvas.winfo_width(), 300)
-        ink = self.palette["ink"]
         accent = self.palette["accent"]
-        muted = self.palette["muted"]
         active = self.state not in {
             TransferState.IDLE,
             TransferState.COMPLETED,
@@ -64,22 +63,18 @@ class AlignmentGuide(ttk.Frame):
 
         if self.mode == "friends":
             cx = width / 2
-            canvas.create_oval(cx - 67, 19, cx + 67, 105, fill=muted, outline="")
-            canvas.create_text(cx, 90, text="Flipper LF", fill=self.palette["card"], font=("Segoe UI Semibold", 9))
+            draw_flipper(canvas, cx - 56, 35, back=True)
             lift = 5 + (3 if active else 0) * pulse
-            canvas.create_oval(cx - 43, lift, cx + 43, 68 + lift, fill=self.palette["card"], outline=accent, width=3)
-            canvas.create_text(cx, 35 + lift, text="Tamagotchi\nback", fill=ink, justify="center", font=("Segoe UI Semibold", 9))
+            draw_tamagotchi(canvas, cx - 32, lift, self.palette, back=True)
             self.caption.set("Place the back of Tamagotchi flat against the Flipper LF antenna and keep it still.")
         else:
             cy = 58
-            canvas.create_oval(18, 17, 116, 103, fill=self.palette["card"], outline=ink, width=2)
-            canvas.create_text(67, 61, text="Flipper", fill=ink, font=("Segoe UI Semibold", 9))
-            canvas.create_oval(width - 116, 17, width - 18, 103, fill=self.palette["card"], outline=ink, width=2)
-            canvas.create_text(width - 67, 61, text="Tamagotchi", fill=ink, font=("Segoe UI Semibold", 9))
+            draw_tamagotchi(canvas, 20, 25, self.palette, sideways=True)
+            draw_flipper(canvas, width - 132, 25)
             for index in range(3):
                 offset = index * 13 + (pulse * 8 if active else 0)
-                canvas.create_arc(116 + offset, cy - 20 - index * 2, 158 + offset, cy + 20 + index * 2, start=285, extent=150, style="arc", outline=accent, width=2)
-                canvas.create_arc(width - 158 - offset, cy - 20 - index * 2, width - 116 - offset, cy + 20 + index * 2, start=105, extent=150, style="arc", outline=accent, width=2)
+                canvas.create_arc(84 + offset, cy - 16, 104 + offset, cy + 16,
+                                  start=285, extent=150, style="arc", outline=accent, width=2)
             if self.mode == "legacy":
                 self.caption.set(
                     "Point the original Tamagotchi IR window at the Flipper and keep both devices still."

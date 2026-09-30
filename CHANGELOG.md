@@ -4,6 +4,20 @@ This file records user-visible changes in Tamagometer Enhanced. Release notes
 for a `vX.Y.Z` tag are taken from the matching `## [X.Y.Z]` section, so every
 release must have a completed entry here before the tag is pushed.
 
+## [3.2.1] - 2026-09-30
+
+### Changed
+
+- Redesigned Tamagotchi and Flipper placement illustrations with matching
+  vector artwork in Desktop and compact monochrome silhouettes on Flipper.
+- Desktop previews retain gift sprites and include IR/LF device placement;
+  device artwork follows the app theme and respects reduced-motion settings.
+
+### Fixed
+
+- Flipper result screens separate readable outcomes from diagnostic counters
+  and keep long text in a scrollable area above Menu/Repeat, preventing overlap.
+
 ## [3.2.0] - 2026-09-30
 
 ### Added

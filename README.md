@@ -10,11 +10,12 @@ MIT-licensed Tamagometer research project. Upstream links are retained in the
 Credits section for attribution; downloads, support, and current development
 for this fork are hosted in this repository.
 
-Current stable release: **3.2.0** (2026-09-30). See the complete
+Current stable release: **3.2.1** (2026-09-30). See the complete
 [`CHANGELOG.md`](CHANGELOG.md) for release history.
 
-Version **3.2.0** adds Initial Support for original Connection V4 and refines
-the Qt catalog, Flipper protocol structure, and local build workflow. The Tkinter
+Version **3.2.1** redesigns the device placement artwork and fixes overlapping
+Flipper result text. Initial Support for original Connection V4 introduced in
+3.2.0 is unchanged. The Tkinter
 UI remains available as a source fallback.
 
 ## Supported devices

@@ -15,21 +15,29 @@ ColumnLayout {
         Layout.preferredHeight: 130
         radius: 12
         color: AppTheme.Theme.surfaceAlt
+        readonly property bool hasSprite: !root.viewModel.legacyMode
+            && root.catalogModel.selectedSpriteUrl.length > 0
         Image {
-            anchors.centerIn: parent
-            width: 88
-            height: 88
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: parent.top
+            anchors.topMargin: 6
+            width: 76
+            height: 76
             source: root.catalogModel.selectedSpriteUrl
             fillMode: Image.PreserveAspectFit
             smooth: false
-            visible: !root.viewModel.legacyMode && source.toString().length > 0
+            visible: parent.hasSprite
         }
-        Label {
-            anchors.centerIn: parent
-            visible: root.viewModel.legacyMode || root.catalogModel.selectedSpriteUrl.length === 0
-            text: root.viewModel.legacyMode ? "IR ↔ Flipper" : "No preview"
-            color: AppTheme.Theme.muted
-            font.pixelSize: 17
+        DeviceGuide {
+            objectName: "transferDeviceGuide"
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 6
+            width: parent.width - 16
+            height: implicitHeight
+            compact: parent.hasSprite
+            friends: root.viewModel.modeKey === "friends"
+            active: root.viewModel.canCancelTransfer
         }
     }
 
