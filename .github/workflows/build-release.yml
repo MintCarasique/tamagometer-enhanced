@@ -64,6 +64,9 @@ jobs:
       - name: Lint QML sources
         run: find tamagometer_desktop/qt/qml -name '*.qml' -print0 | xargs -0 pyside6-qmllint
 
+      - name: Replay original Connection captures through the C decoder
+        run: python ../flipper/tools/test_legacy.py --cc gcc
+
       - name: Compile Python sources
         run: python -m compileall -q .
 

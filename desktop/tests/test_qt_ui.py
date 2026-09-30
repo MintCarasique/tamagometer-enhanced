@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 os.environ.setdefault("QT_QUICK_BACKEND", "software")
@@ -12,8 +13,8 @@ from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
 
 from tamagometer_desktop import __version__
-from tamagometer_desktop.catalog import FAVORITES_CATEGORY
-from tamagometer_desktop.modes import CONNECTION_MODE, LEGACY_MODE
+from tamagometer_desktop.catalog import FAVORITES_CATEGORY, RECENT_CATEGORY
+from tamagometer_desktop.modes import CONNECTION_MODE, FRIENDS_MODE, LEGACY_MODE
 from tamagometer_desktop.qt.app_view_model import AppViewModel
 from tamagometer_desktop.qt.application import qml_root
 from tamagometer_desktop.qt.catalog_model import CatalogModel
@@ -27,6 +28,31 @@ APP = QGuiApplication.instance() or QGuiApplication(["tamagometer-tests"])
 
 
 class QtCatalogModelTests(unittest.TestCase):
+    def test_filtering_reuses_sprite_metadata_and_refreshes_on_mode_change(self):
+        with patch("tamagometer_desktop.qt.catalog_model.item_sprite_path", return_value=None) as sprites:
+            model = CatalogModel(CONNECTION_MODE)
+            self.assertEqual(sprites.call_count, len(CONNECTION_MODE.items))
+            sprites.reset_mock()
+            model.query = "Scone"
+            model.toggleFavorite(0)
+            model.set_recent(("connection:0",))
+            model.query = ""
+            model.category = FAVORITES_CATEGORY
+            self.assertEqual(model.selectedName, "Scone")
+            sprites.assert_not_called()
+            model.set_mode(FRIENDS_MODE)
+            self.assertEqual(sprites.call_count, len(FRIENDS_MODE.items))
+
+    def test_recent_order_and_flags_survive_filtering(self):
+        model = CatalogModel(CONNECTION_MODE, recent=("connection:4", "connection:0"))
+        model.category = RECENT_CATEGORY
+        self.assertEqual(model.count, 2)
+        self.assertEqual(model.data(model.index(0, 0), model.ItemIdRole), 4)
+        self.assertTrue(model.data(model.index(0, 0), model.RecentRole))
+        model.set_recent(("connection:0",))
+        self.assertEqual(model.count, 1)
+        self.assertEqual(model.selectedName, "Scone")
+
     def test_roles_filter_by_name_category_decimal_and_hex_id(self):
         model = CatalogModel(CONNECTION_MODE)
         self.assertEqual(model.count, 181)

@@ -27,12 +27,13 @@ INFO = (
 class FakeSerial:
     is_open = True
 
-    def __init__(self, chunk_size=4096):
+    def __init__(self, chunk_size=4096, legacy_peer="v2"):
         self.output = []
         self.input = bytearray()
         self.listen_count = 0
         self.chunk_size = chunk_size
         self.disconnect_on_read = False
+        self.legacy_peer = legacy_peer
 
     @property
     def in_waiting(self):
@@ -61,7 +62,7 @@ class FakeSerial:
                 )
             self.input.extend(
                 b"[TAMALEGACY]result=Transfer complete;"
-                b"activity=Balloon game;peer=v2[END]"
+                + f"activity=Balloon game;peer={self.legacy_peer}[END]".encode("ascii")
             )
         return len(data)
 
@@ -177,28 +178,25 @@ class SerialFlowTests(unittest.TestCase):
         self.assertEqual(fake.output, ["tamagometer friends1", "<ETX>"])
 
     def test_legacy_fallback_reports_activity_and_progress(self):
-        fake = FakeSerial(chunk_size=5)
-        updates = []
-        connection = FlipperConnection(fake)
-
-        activity, peer = connection.run_legacy_fallback(
-            threading.Event(), updates.append, timeout=0.2,
-        )
-
-        self.assertEqual(fake.output, ["tamagometer legacy"])
-        self.assertEqual((activity, peer), ("Balloon game", "v2"))
-        self.assertEqual(
-            [update.state for update in updates],
-            [
-                TransferState.WAITING_FIRST_MESSAGE,
-                TransferState.SENDING_ACKNOWLEDGEMENT,
-                TransferState.WAITING_GIFT_REQUEST,
-                TransferState.SENDING_RESULT,
-            ],
-        )
-        self.assertIsNotNone(LEGACY_RESULT_RE.search(
-            b"[TAMALEGACY]result=Transfer complete;activity=Random gift;peer=v3[END]",
-        ))
+        for peer in ("v2", "v3", "v4"):
+            with self.subTest(peer=peer):
+                fake = FakeSerial(chunk_size=5, legacy_peer=peer)
+                updates = []
+                connection = FlipperConnection(fake)
+                activity, result_peer = connection.run_legacy_fallback(
+                    threading.Event(), updates.append, timeout=0.2,
+                )
+                self.assertEqual(fake.output, ["tamagometer legacy"])
+                self.assertEqual((activity, result_peer), ("Balloon game", peer))
+                self.assertEqual(
+                    [update.state for update in updates],
+                    [
+                        TransferState.WAITING_FIRST_MESSAGE,
+                        TransferState.SENDING_ACKNOWLEDGEMENT,
+                        TransferState.WAITING_GIFT_REQUEST,
+                        TransferState.SENDING_RESULT,
+                    ],
+                )
 
     def test_friends_confirmation_timeout_is_reported(self):
         class SilentSerial(FakeSerial):

@@ -10,11 +10,11 @@ MIT-licensed Tamagometer research project. Upstream links are retained in the
 Credits section for attribution; downloads, support, and current development
 for this fork are hosted in this repository.
 
-Current stable release: **3.1.0** (2026-09-05). See the complete
+Current stable release: **3.2.0** (2026-09-30). See the complete
 [`CHANGELOG.md`](CHANGELOG.md) for release history.
 
-Desktop **3.1.0** refines the PySide6/Qt Quick implementation and the Flipper
-standalone application without changing their hardware protocols. The Tkinter
+Version **3.2.0** adds Initial Support for original Connection V4 and refines
+the Qt catalog, Flipper protocol structure, and local build workflow. The Tkinter
 UI remains available as a source fallback.
 
 ## Supported devices
@@ -25,20 +25,28 @@ UI remains available as a source fallback.
 | Tamagotchi Friends | LF RFID | BFF BUMP: 60 jewelry outcomes and 200–1,000 Gotchi Points | Verified on hardware |
 | Original Tamagotchi Connection V2 | Infrared | V1-compatible random game/gift fallback | Verified on hardware; experimental protocol |
 | Original Tamagotchi Connection V3 | Infrared | `Others` random game/gift fallback | Verified on hardware; experimental protocol |
+| Original Tamagotchi Connection V4 / JinSei | Infrared | `Others` random game/gift fallback | Initial Support in 3.2; gift receipt and refactored build tested on hardware |
 
 Tamagotchi Friends support currently covers the receiver side of **BFF BUMP**.
 Exchange, Visit Bump, Mail, and Special modes are not implemented.
 
-## Version 3.1
+Version 3.2 adds **Initial Support for V4** `Others` fallback using a captured
+V3 responder profile. Install the 3.2 Companion together with Desktop;
+Companion 3.1 cannot receive V4's 24-byte identity packets. See
+[`flipper/docs/CONNECTION_V4.md`](flipper/docs/CONNECTION_V4.md) for capture
+evidence and the remaining hardware checks. This does not provide selectable V4
+inventory gifts or native V4-to-V4 mode.
 
-Version 3.1 keeps the responsive PySide6/Qt Quick interface introduced in 3.0
-and simplifies its connection state and catalog internals. The Flipper app now
-uses clearer scene callback mappings and shared worker cleanup paths. These are
-maintenance changes: Connection 2024, Friends, and original V2/V3 behavior is
-unchanged.
+## Version 3.2
+
+Version 3.2 adds V4 fallback and caches Qt catalog metadata so searching and
+updating favorites no longer repeatedly access sprite files. The Flipper app
+separates legacy exchange orchestration from other protocols, shares retry
+handling, and reuses one IR worker per exchange. V3 and V4 were tested on
+physical hardware after this refactor; reply bytes and delays are preserved.
 
 The Flipper application remains fully hybrid: Connection 2024 gifts, Friends
-rewards, and the original V2/V3 fallback can be started directly on the
+rewards, and the original V2/V3/V4 fallback can be started directly on the
 Flipper. Its standalone UI includes categorized catalogs, favorites, recent
 items, repeat-last transfer, item artwork, placement guidance, progress,
 cancellation, vibration feedback, and diagnostic export.
@@ -50,12 +58,13 @@ light/dark themes, inline notifications, repeat-last transfer, and one-file
 diagnostic export.
 
 The Flipper application also includes a passive Connection Sniffer for
-recording original V1/V2/V3 infrared sessions as decoded bytes and raw timings.
+recording original V1/V2/V3/V4 infrared sessions as decoded bytes and raw timings.
 The V2 `Version 1` / V3 `Others` fallback is hardware-verified but remains an
 experimental protocol: the physical Tamagotchi randomly chooses a game or
 gift, and games currently use the captured responder-win result.
 
-Desktop 3.1 requires Tamagometer Enhanced Companion 2.0.0 or newer. Install
+Desktop 3.2 keeps the minimum Companion version at 2.0.0 for earlier modes;
+V4 requires Companion 3.2.0 or newer. Install
 the `.exe` and `.fap` from the same release. Friends jewelry names remain
 numbered until a complete ID-to-name mapping can be verified.
 
@@ -99,10 +108,10 @@ because both register the same `tamagometer` USB CLI command.
 The physical Tamagotchi initiates this exchange because the initiator receives
 the gift.
 
-## Original Connection V2/V3 fallback
+## Original Connection V2/V3/V4 fallback
 
-1. Select **Original V2/V3 · IR** and click **Start fallback**.
-2. On an original V2 choose **Version 1**, or on an original V3 choose
+1. Select **Original V2/V3/V4 · IR** and click **Start fallback**.
+2. On an original V2 choose **Version 1**, or on an original V3/V4 choose
    **Others**.
 3. Start the connection and point the Tamagotchi IR window at the Flipper.
 4. Keep both devices still until the activity and peer model are reported.
@@ -110,6 +119,9 @@ the gift.
 The Tamagotchi randomly chooses a game or gift. The current game response uses
 the hardware-captured responder-win outcome; a concrete gift cannot be chosen
 because the receiving Tamagotchi determines the displayed gift locally.
+V4 requires Companion 3.2.0 or newer. This is Initial Support: gift receipt and
+the refactored build were hardware-tested, but game winner semantics remain
+experimental. Native V4 mode and selectable V4 inventory gifts are not supported.
 
 ## Sending a Tamagotchi Friends BFF reward
 

@@ -64,12 +64,15 @@ The repository includes compact PowerShell helpers for the routine workflow:
 # Run tests, QML lint, and compileall with output shown only on failure.
 .\tools\check.ps1
 
+# Build the current FAP, verify its version and checksum, and copy the artifact.
+.\tools\build_flipper.ps1
+
 # Squash a completed feature branch into main, verify it, push it, and remove
 # the local and remote feature branch.
 .\tools\squash-feature.ps1 -Branch feature/example -Message "Add example feature"
 
 # Validate metadata, create the tag, wait for Actions, and verify all assets.
-.\tools\release.ps1 -Version 3.1.0
+.\tools\release.ps1 -Version 3.2.0
 ```
 
 Use `tools/commit.ps1` when a checked commit is useful without a merge. It

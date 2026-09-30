@@ -61,6 +61,7 @@ class CatalogModel(QAbstractListModel):
         self._category = ALL_CATEGORY
         self._rows: list[dict] = []
         self._selected_key = ""
+        self._catalog_rows = self._build_catalog()
         self._rebuild()
 
     def roleNames(self):
@@ -86,48 +87,42 @@ class CatalogModel(QAbstractListModel):
 
     def _make_row(self, item_id: int, name: str) -> dict:
         key = item_key(self._mode.key, item_id)
+        category = category_for(self._mode, item_id)
         path = item_sprite_path(sprite_filename(self._mode, name))
         return {
             "itemId": item_id,
             "displayId": self._display_id(item_id),
             "name": name,
-            "category": category_for(self._mode, item_id),
-            "favorite": key in self._favorites,
-            "recent": key in self._recent,
+            "category": category,
             "spriteUrl": QUrl.fromLocalFile(str(path)).toString() if path else "",
             "itemKey": key,
+            "searchText": " ".join((
+                name, category, str(item_id),
+                f"{item_id:03d}", f"0x{item_id:02x}", f"{item_id:02x}",
+            )).casefold(),
         }
 
-    def _matches_query(self, row: dict) -> bool:
-        query = self._query.strip().casefold()
-        if not query:
-            return True
-        item_id = row["itemId"]
-        searchable = " ".join(
-            (
-                row["name"],
-                row["category"],
-                str(item_id),
-                f"{item_id:03d}",
-                f"0x{item_id:02x}",
-                f"{item_id:02x}",
-            )
-        ).casefold()
-        return query in searchable
+    def _build_catalog(self) -> list[dict]:
+        """Resolve immutable labels and sprite paths once per mode change."""
+        if self._mode.key == "legacy":
+            return []
+        return [self._make_row(item_id, name) for item_id, name in self._mode.items]
 
     def _rebuild(self) -> None:
         selected = self._selected_key
-        candidates = [] if self._mode.key == "legacy" else list(self._mode.items)
+        candidates = list(self._catalog_rows)
+        favorites = set(self._favorites)
+        recent = set(self._recent)
+        query = self._query.strip().casefold()
         recent_order = {key: index for index, key in enumerate(self._recent)}
         if self._category == RECENT_CATEGORY:
             candidates.sort(
-                key=lambda item: recent_order.get(
-                    item_key(self._mode.key, item[0]), 9999
-                )
+                key=lambda row: recent_order.get(row["itemKey"], len(recent_order))
             )
         rows = []
-        for item_id, name in candidates:
-            row = self._make_row(item_id, name)
+        for catalog_row in candidates:
+            key = catalog_row["itemKey"]
+            row = {**catalog_row, "favorite": key in favorites, "recent": key in recent}
             if self._category == FAVORITES_CATEGORY and not row["favorite"]:
                 continue
             if self._category == RECENT_CATEGORY and not row["recent"]:
@@ -138,7 +133,7 @@ class CatalogModel(QAbstractListModel):
                 and row["category"] != self._category
             ):
                 continue
-            if self._matches_query(row):
+            if query in row["searchText"]:
                 rows.append(row)
         self.beginResetModel()
         self._rows = rows
@@ -150,6 +145,7 @@ class CatalogModel(QAbstractListModel):
 
     def set_mode(self, mode: ModeDefinition) -> None:
         self._mode = mode
+        self._catalog_rows = self._build_catalog()
         self._category = ALL_CATEGORY
         self._query = ""
         self.queryChanged.emit()

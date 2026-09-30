@@ -113,7 +113,7 @@ class TamagometerDesktop(tk.Tk):
         )
         ttk.Label(
             hero,
-            text="Connection gifts, original V2/V3 fallback, and Friends rewards",
+            text="Connection gifts, original V2/V3/V4 fallback, and Friends rewards",
             style="HeroText.TLabel",
         ).grid(row=1, column=0, sticky="w", pady=(2, 0))
         right = ttk.Frame(hero, style="Hero.TFrame")

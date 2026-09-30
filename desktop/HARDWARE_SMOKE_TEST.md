@@ -1,4 +1,4 @@
-# Desktop 3.0 hardware smoke test
+# Desktop hardware smoke test
 
 Complete this checklist on the exact Windows `.exe` and Flipper `.fap` intended
 for release. Record the release tag or commit, SHA-256 checksums, Windows
@@ -31,11 +31,13 @@ models used.
   confirm progress reaches all 10 repetitions.
 - Original Connection V2: complete one `Version 1` fallback session.
 - Original Connection V3: complete one `Others` fallback session.
+- Original Connection V4 (Initial Support): complete one `Others` fallback
+  session using Companion 3.2.0 or newer; record the activity and visible gift.
 - For each mode, deliberately cause one timeout/misalignment and confirm the
   inline recovery message, cancellation, and subsequent retry work.
 
 Do not remove the `python app.py --tk` development fallback or call Desktop
-3.0 hardware-verified until all applicable checks above pass on the packaged
+hardware-verified until all applicable checks above pass on the packaged
 build.
 
 ## 3.0.0 release validation
@@ -45,3 +47,11 @@ build.
   Companion operate successfully with physical Tamagotchi hardware.
 - Automated release checks cover Linux tests/QML lint, Windows packaging and
   startup, executable size, FAP compilation, release notes, and checksums.
+
+## 3.2.0 release validation
+
+- On 2026-09-30, the user confirmed V4 gift receipt and tested the refactored
+  Companion on physical V4 and V3 devices before approving the release.
+- V4 is Initial Support in `Others` fallback only. Game winner semantics and
+  desktop-driven V4 exchanges have not been independently validated.
+- This does not claim a new full packaged-Desktop hardware smoke test.

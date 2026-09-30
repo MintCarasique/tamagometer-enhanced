@@ -4,6 +4,41 @@ This file records user-visible changes in Tamagometer Enhanced. Release notes
 for a `vX.Y.Z` tag are taken from the matching `## [X.Y.Z]` section, so every
 release must have a completed entry here before the tag is pushed.
 
+## [3.2.0] - 2026-09-30
+
+### Added
+
+- **Initial Support for original Connection V4 / JinSei** in `Others` fallback, responding as
+  V3 using a captured identity and the current session byte.
+- V4 identification in standalone status, diagnostic reports, and Desktop
+  transfer results. Desktop's original Connection selector now includes V4.
+- Capture replay tests exercising the production C decoder and V4 reply bytes.
+
+### Fixed
+
+- Decode complete 24-byte V4 identities instead of truncating them to 20 bytes
+  and incorrectly rejecting their checksum.
+- Share frame decoding between the Connection Sniffer and fallback; malformed
+  or unsupported frame lengths are rejected instead of decoded as shorter frames.
+
+### Changed
+
+- Separate original Connection exchange orchestration from the Connection 2024
+  and Friends protocol code. Reuse one IR worker per exchange and share initial
+  and retry acknowledgement handling without changing reply bytes or delays.
+- Cache Qt catalog search metadata and sprite paths per mode, avoiding repeated
+  file checks while searching or updating favorites and recently sent items.
+- Share Companion runtime version and capabilities between CLI, About, and
+  diagnostics. Add a verified local FAP build helper to avoid stale artifacts.
+
+### Compatibility
+
+- V4 requires the 3.2 Companion. V2/V3 identity profiles and replies are preserved.
+- V4 gift receipt and the refactored V4/V3 build were tested on physical
+  hardware. V4 remains Initial Support: game outcome semantics and exhaustive
+  compatibility are not established. Native V4 mode and selectable V4 gifts
+  are not implemented.
+
 ## [3.1.0] - 2026-09-05
 
 ### Changed

@@ -370,9 +370,9 @@ class FlipperConnection:
         status: Callable[[TransferUpdate], None] = lambda _update: None,
         timeout: float = 90.0,
     ) -> tuple[str, str]:
-        """Run one original V2/V3 compatibility exchange on the Flipper."""
+        """Run one original V2/V3/V4 compatibility exchange on the Flipper."""
         self._clear_input()
-        self.trace("Starting original V2/V3 compatibility fallback")
+        self.trace("Starting original V2/V3/V4 compatibility fallback")
         self._write_line("tamagometer legacy")
         deadline = time.monotonic() + timeout
         highest_progress = -1
@@ -414,7 +414,7 @@ class FlipperConnection:
             if "Invalid argument" in response or "command not found" in response.casefold():
                 self._buffer.clear()
                 raise IncompatibleCompanionError(
-                    "This Flipper app does not support original V2/V3 fallback. "
+                    "This Flipper app does not support original Connection fallback. "
                     "Install the matching Tamagometer Enhanced Companion."
                 )
             if len(self._buffer) > 8192:

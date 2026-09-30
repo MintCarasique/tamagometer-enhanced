@@ -61,12 +61,13 @@ FRIENDS_MODE = ModeDefinition(
 
 LEGACY_MODE = ModeDefinition(
     key="legacy",
-    selector_label="Original V2/V3 · IR",
+    selector_label="Original V2/V3/V4 · IR",
     picker_title="Compatibility fallback",
     picker_hint="Automatic random game or gift through the Flipper app",
     instructions=(
-        "Click Start fallback first. On V2 choose Version 1, or on V3 choose "
+        "Click Start fallback first. On V2 choose Version 1, or on V3/V4 choose "
         "Others, start the connection, and align the IR ports."
+        " Initial Support for V4 requires Companion 3.2 or newer."
     ),
     send_label="Start fallback",
     attempt_label="Original fallback",

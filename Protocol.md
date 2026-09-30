@@ -1,5 +1,19 @@
 # Tamagotchi IR data format
 
+## Connection V4 — Initial Support in 3.2.0
+
+V4 uses the `Others` compatibility fallback, responding as a captured V3 peer.
+Its initial identity has 24 bytes, not the 20 bytes used by V3. The shared
+decoder validates the complete byte-sum checksum and identifies V4 by length.
+On 2026-09-30, V4 gift receipt and the refactored V4/V3 Companion build were
+confirmed on physical hardware before release approval.
+
+This is Initial Support, not a complete native V4 protocol implementation.
+Game winner semantics and exhaustive compatibility remain experimental;
+selectable V4 inventory gifts, native V4-to-V4 mode, and V4.5 are not supported.
+See [`flipper/docs/CONNECTION_V4.md`](flipper/docs/CONNECTION_V4.md) for capture
+evidence, implementation boundaries, and follow-up checks.
+
 ## Original Connection V2/V3 compatibility mode
 
 An observed original Connection V2 (`Version 1`) to original Connection V3

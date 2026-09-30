@@ -6,16 +6,16 @@ Flipper Zero. The interface supports three distinct protocols:
 - **Tamagotchi Connection v3 2024 re-release** — send any of 181 gifts over IR.
 - **Tamagotchi Friends** — choose one of 60 jewelry outcomes or a 200–1,000
   Gotchi Point reward for BFF BUMP over low-frequency RFID.
-- **Original Connection V2/V3** — run the hardware-verified `Version 1` /
-  `Others` random game-or-gift compatibility fallback over IR.
+- **Original Connection V2/V3/V4** — run the `Version 1` / `Others` random
+  game-or-gift compatibility fallback over IR. V4 has Initial Support in 3.2.
 
 The app is unofficial and is not affiliated with Bandai.
 
-Current stable Desktop version: **3.1.0**. Desktop and Companion builds should
+Current stable Desktop version: **3.2.0**. Desktop and Companion builds should
 come from the same GitHub Release; see the parent
 [`CHANGELOG.md`](../CHANGELOG.md) for release history.
 
-The source tree identifies as **3.1.0**. The PySide6/Qt Quick UI is the default
+The source tree identifies as **3.2.0**. The PySide6/Qt Quick UI is the default
 source and packaged entry point and supports all three hardware transfer
 workflows. Use `python app.py --tk` to compare against the retained Tkinter
 implementation.
@@ -84,16 +84,22 @@ returns after a USB interruption.
 The physical Tamagotchi initiates the exchange because the initiator receives
 the gift.
 
-## Original Connection V2/V3 fallback
+## Original Connection V2/V3/V4 fallback
 
-1. Select **Original V2/V3 · IR** and connect the COM port.
+1. Select **Original V2/V3/V4 · IR** and connect the COM port.
 2. Click **Start fallback**.
-3. On V2 choose **Version 1**, or on V3 choose **Others**, and start the
+3. On V2 choose **Version 1**, or on V3/V4 choose **Others**, and start the
    connection.
 4. Align the IR ports until the Desktop reports the random activity and peer.
 
 Games currently use the captured responder-win result. Gifts are chosen by the
 receiving Tamagotchi rather than selected by the Desktop.
+
+V4 has **Initial Support** in 3.2 and requires Companion 3.2.0 or newer. It uses
+a captured V3 responder profile. Standalone V4 gift receipt and the refactored
+V4/V3 build have been checked on hardware. Game winner semantics and
+desktop-driven V4 exchanges still need separate validation. There is no
+selectable V4 gift catalog or native V4 mode.
 
 ## Tamagotchi Friends BFF rewards
 
